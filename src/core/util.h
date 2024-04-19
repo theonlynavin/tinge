@@ -1,3 +1,6 @@
+#ifndef TINGE_UTIL_H
+#define TINGE_UTIL_H
+
 #include <cuda_runtime.h>
 #include <math.h>
 #include <iostream>
@@ -284,12 +287,12 @@ namespace tinge
 
     struct matrix3
     {
-        __host__ __device__ float3 m[3];
+        float3 m[3];
     };
 
     struct matrix4
     {
-        __host__ __device__ float4 m[4];
+        float4 m[4];
     };
     
     __host__ __device__ static inline matrix3 transpose(const matrix3& m)
@@ -413,3 +416,5 @@ namespace tinge
         return stream;
     }
 }
+
+#endif

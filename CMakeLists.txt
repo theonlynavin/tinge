@@ -11,10 +11,19 @@ find_library(CUDART_LIBRARY cudart ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
 # Set up project structure
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-include_directories(${PROJECT_SOURCE_DIR}/include ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES} )
-link_directories(${PROJECT_SOURCE_DIR}/lib ${CUDART_LIBRARY} )
 
-set(SRC "src/main.cpp")
+include_directories(
+    ${PROJECT_SOURCE_DIR}/include 
+    ${PROJECT_SOURCE_DIR}/src/core 
+    ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+)
+
+link_directories(
+    ${PROJECT_SOURCE_DIR}/lib 
+    ${CUDART_LIBRARY}
+)
+
+set(SRC "src/main.cu")
 
 # Build the executable
 
