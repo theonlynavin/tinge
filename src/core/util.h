@@ -1,7 +1,7 @@
 #ifndef TINGE_UTIL_H
 #define TINGE_UTIL_H
 
-#include <cuda_runtime.h>
+#include "core.h"
 #include <math.h>
 #include <iostream>
 
@@ -597,6 +597,16 @@ namespace tinge
         };
     }
 
+    __host__ __device__ static inline vec3 operator*(const vec3& a, const mat4& b)
+    {
+        return vec3
+        {
+            a.x * b.m[0].x + a.y * b.m[1].x + a.z * b.m[2].x + b.m[3].x,
+            a.x * b.m[0].y + a.y * b.m[1].y + a.z * b.m[2].y + b.m[3].y,
+            a.x * b.m[0].z + a.y * b.m[1].z + a.z * b.m[2].z + b.m[3].z,
+        };
+    }
+
     __host__ __device__ static inline vec4 operator*(const mat4& a, const vec4& b)
     {
         return vec4
@@ -605,6 +615,16 @@ namespace tinge
             a.m[1].x * b.x + a.m[1].y * b.y + a.m[1].z * b.z + a.m[1].w * b.w,
             a.m[2].x * b.x + a.m[2].y * b.y + a.m[2].z * b.z + a.m[2].w * b.w,
             a.m[3].x * b.x + a.m[3].y * b.y + a.m[3].z * b.z + a.m[3].w * b.w
+        };
+    }
+
+    __host__ __device__ static inline vec3 operator*(const mat4& a, const vec3& b)
+    {
+        return vec3
+        {
+            a.m[0].x * b.x + a.m[0].y * b.y + a.m[0].z * b.z + a.m[0].w,
+            a.m[1].x * b.x + a.m[1].y * b.y + a.m[1].z * b.z + a.m[1].w,
+            a.m[2].x * b.x + a.m[2].y * b.y + a.m[2].z * b.z + a.m[2].w
         };
     }
 

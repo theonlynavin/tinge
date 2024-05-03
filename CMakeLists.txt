@@ -28,6 +28,7 @@ set(SRC "src/main.cu")
 # Build the executable
 
 add_executable(tinge ${SRC})
+target_link_libraries(tinge "libglfw3.a" "libGLEW.a" "GL")
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
