@@ -5,7 +5,8 @@ project(tinge VERSION 0.1.0 LANGUAGES CUDA C CXX)
 
 set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
 set(CMAKE_CUDA_STANDARD 17)
-set(CMAKE_CUDA_FLAGS ${CMAKE_CUDA_FLAGS} "-g -G")  # enable cuda-gdb
+set(CMAKE_CUDA_FLAGS ${CMAKE_CUDA_FLAGS} "-Xptxas -O3")  # -g -G for cuda-gdb
+                                                   # -Xptxas -O3 for optimization
 find_library(CUDART_LIBRARY cudart ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
 
 # Set up project structure
@@ -15,6 +16,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 include_directories(
     ${PROJECT_SOURCE_DIR}/include 
     ${PROJECT_SOURCE_DIR}/src/core 
+    ${PROJECT_SOURCE_DIR}/src/shapes 
     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
 )
 

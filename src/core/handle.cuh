@@ -1,12 +1,11 @@
-#ifndef TINGE_CORE_H
-#define TINGE_CORE_H
-
+#pragma once
 #include <GL/glew.h>
 #include <cuda_runtime.h>
+#include <iostream>
 
 #ifdef TINGE_DEBUG
 #define cudaCall(err) handleCudaCall(err, __FILE__, __LINE__)
-#define glCall(f) {f; handleGLCall(__FILE__, __LINE__); }
+#define glCall(f) { f; handleGLCall(__FILE__, __LINE__); }
 #else
 #define cudaCall(err) err
 #define glCall(f) f
@@ -30,5 +29,3 @@ inline void handleGLCall(const char* file, int line)
         std::exit(err);
     }
 }
-
-#endif

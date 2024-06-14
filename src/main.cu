@@ -1,30 +1,51 @@
 #include <iostream>
 
 #define TINGE_DEBUG
-#include "core/core.h"
+#include "handle.cuh"
+#include "sphere.cuh"
 
-#include <GLFW/glfw3.h>
+#include <glfw/glfw3.h>
 #include <cuda_gl_interop.h>
 
-__global__ void kernel(cudaSurfaceObject_t surface, float t, int width, int height) 
+__global__ void kernel(cudaSurfaceObject_t surface, Tinge::Sphere s, int width, int height) 
 {
-    unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
-    unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
-    if (x < width && y < height) 
-    {
-        uchar4 color = uchar4{0,0,0,0};
-        
-        float y0 = sin(t - 5*float(x)/width);
+    const float ar = float(width)/float(height);
+    constexpr float scale = 0.7;
+    using namespace Tinge;
+ 
+    for (int j = blockIdx.y * blockDim.y + threadIdx.y; j < height; j += blockDim.y * gridDim.y)
+    {            
+        for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < width; i += blockDim.x * gridDim.x)
+        {            
+            
+            const float u = 2*float(i)/width-1;
+            const float v = 2*float(j)/height-1;
+            
+            constexpr float3 blue = float3{0.5, 0.7, 0.9};
+            constexpr float3 white = float3{1, 1, 1};
+            
+            float t = 0.5*(v+1);
+            float3 sky = mix(white, blue, t);
 
-        if (abs(float(4*(y - 0.5*height))/(height) - y0) < 1e-2)
-        {
-            float v = 255 * abs(y0);
-            color.x = v;
-            color.y = v;
-            color.z = v;
-            color.w = v;
+            uchar4 color = uchar4{sky.x*255, sky.y*255, sky.z*255, 255};
+
+            Ray r = Ray(Vec3{0,0, 3}, normalize(Vec3{ar*u*scale,v*scale,-1}));
+
+            HitInfo hit = HitInfo();
+
+            for (int st = 0; st < 250; st++)
+            {
+                if (Sphere(Vec3{float(st)/500,0,0}, float(st)/2500).intersect(r, Matrix4{float4{}}, hit))
+                {
+                    Vec3 clr = st * hit.normal;
+                    color.x = clr.x;
+                    color.y = clr.y;
+                    color.z = clr.z;
+                }
+            }
+
+            surf2Dwrite(color, surface, i * sizeof(uchar4), j);
         }   
-        surf2Dwrite(color, surface, x * sizeof(uchar4), y);
     }
 }
 
@@ -71,7 +92,7 @@ int main(int argc, char const *argv[])
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    GLFWwindow* window = glfwCreateWindow(width, height, "tinge", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(width, height, "Tinge", NULL, NULL);
     glfwSetWindowSizeCallback(window, resizeWindow);
     glfwMakeContextCurrent(window);
 
@@ -88,12 +109,26 @@ int main(int argc, char const *argv[])
     int dev;
     cudaCall(cudaGetDevice(&dev));
 
+    glCall(glEnable(GL_FRAMEBUFFER_SRGB));
+
+    /*glm::mat4 trnsfm(1.0f);
+    trnsfm = glm::scale(trnsfm, glm::vec3(2, 0.5, 1));
+    trnsfm = glm::translate(trnsfm, glm::vec3(1, 1, 0));
+    trnsfm = glm::inverse(trnsfm);*/
+
     // Main render loop
 
     initializeTexture(width, height);
+    
+    int numSMs;
+    cudaDeviceGetAttribute(&numSMs, cudaDevAttrMultiProcessorCount, 0);
+
+    Tinge::Sphere s = Tinge::Sphere(Tinge::Vec3{0,0,0}, 0.4);
 
     while (!glfwWindowShouldClose(window)) 
     {
+        float start_t = glfwGetTime();
+
         // Render to the texture
 
         cudaCall(cudaGraphicsMapResources(1, &interop.cuda_texture, 0));
@@ -109,13 +144,16 @@ int main(int argc, char const *argv[])
         cudaSurfaceObject_t cudaSurface;
         cudaCall(cudaCreateSurfaceObject(&cudaSurface, &resDesc));
 
-        dim3 threadsPerBlock(16, 16);
-        dim3 numBlocks((width + threadsPerBlock.x - 1) / threadsPerBlock.x, (height + threadsPerBlock.y - 1) / threadsPerBlock.y);
-        kernel<<<numBlocks, threadsPerBlock>>>(cudaSurface, glfwGetTime(), width, height);
+        dim3 threadsPerBlock(2*numSMs, 2*numSMs);
+        dim3 numBlocks((width + threadsPerBlock.x - 1) / (threadsPerBlock.x), (height + threadsPerBlock.y - 1) / (threadsPerBlock.y));
+        kernel<<<numBlocks, threadsPerBlock>>>(cudaSurface, s, width, height);
         
+        cudaCall(cudaPeekAtLastError());
         cudaCall(cudaDeviceSynchronize());
         cudaCall(cudaDestroySurfaceObject(cudaSurface));    
         cudaCall(cudaGraphicsUnmapResources(1, &interop.cuda_texture, 0));
+
+        float end_t = glfwGetTime();
         
         // Draw the rendered texture
 
@@ -138,10 +176,55 @@ int main(int argc, char const *argv[])
       
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        float final_t = glfwGetTime();
+
         glfwGetWindowSize(window, &width, &height);
+
+        std::cout << "CUDA: " << 1000 * (end_t - start_t) << "ms, OpenGL: " << 1000 * (final_t - end_t) << "ms\n";
+        std::cout << "Framerate: " << 1 / (final_t - start_t) << "\n\033[A\033[A\r"; 
     }
+
+    std::cout << "\n\n" << std::endl;
 
     glfwTerminate();
     
     return 0;
 }
+
+/*float r = 0.05;
+
+        t = 5*t;
+
+        float cx = 0.5*r*(t - sin(t));// - floor(0.5*r*(t - sin(t)));    
+
+        if (abs(2*(u - cx)) < 1e-2)
+        {
+            if (cx < 0.45)
+            {
+                if (abs(v + 0.2 - r*(1 - cos(t))) < 1e-2)
+                {
+                    color.z = u * 255;
+                    color.y = 0.5*(v+1) * 255;
+                    color.x = 255;
+                    color.w = 255;
+                }
+            }
+            else
+            {   
+                if (abs(v + 0.2 - r*(1 - cos(t)) - 3.4 + t/5) < 1e-2)
+                {
+                    color.z = u * 255;
+                    color.y = 0.5*(v+1) * 255;
+                    color.x = 255;
+                    color.w = 255;
+                }
+            }
+        }   
+        if (u < 0.4 && v < -0.2)
+        {
+            color.x = 0.5* 255;
+            color.y = 0.5* 255;
+            color.z = 0.5* 255;
+            color.w = 255;
+        }*/
