@@ -4,11 +4,12 @@
 #include <iostream>
 
 #ifdef TINGE_DEBUG
-#define cudaCall(err) handleCudaCall(err, __FILE__, __LINE__)
-#define glCall(f) { f; handleGLCall(__FILE__, __LINE__); }
+#define cudaCall(err) handleCudaCall(err, __FILE__, __LINE__)   // handles CUDA API Calls
+#define glCall(f) { f; handleGLCall(__FILE__, __LINE__); }      // handles OpenGL API Calls
+
 #else
-#define cudaCall(err) err
-#define glCall(f) f
+#define cudaCall(err) err                                       // handles CUDA API Calls
+#define glCall(f) f                                             // handles OpenGL API Calls
 #endif
 
 inline void handleCudaCall(cudaError_t err, const char* file, int line)

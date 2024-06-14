@@ -7,11 +7,10 @@
 #include <glfw/glfw3.h>
 #include <cuda_gl_interop.h>
 
-__global__ void kernel(cudaSurfaceObject_t surface, Tinge::Sphere s, int width, int height) 
+__global__ void kernel(cudaSurfaceObject_t surface, int width, int height) 
 {
     const float ar = float(width)/float(height);
     constexpr float scale = 0.7;
-    using namespace Tinge;
  
     for (int j = blockIdx.y * blockDim.y + threadIdx.y; j < height; j += blockDim.y * gridDim.y)
     {            
@@ -21,23 +20,29 @@ __global__ void kernel(cudaSurfaceObject_t surface, Tinge::Sphere s, int width, 
             const float u = 2*float(i)/width-1;
             const float v = 2*float(j)/height-1;
             
-            constexpr float3 blue = float3{0.5, 0.7, 0.9};
-            constexpr float3 white = float3{1, 1, 1};
+            constexpr glm::vec3 blue = glm::vec3{0.5, 0.7, 0.9};
+            constexpr glm::vec3 white = glm::vec3{1, 1, 1};
             
             float t = 0.5*(v+1);
-            float3 sky = mix(white, blue, t);
+            glm::vec3 sky = glm::mix(white, blue, t);
+
+            /*glm::mat4 trnsfm(1.0f);
+            trnsfm = glm::scale(trnsfm, glm::vec3(2, 0.5, 1));
+            trnsfm = glm::translate(trnsfm, glm::vec3(1, 1, 0));
+            trnsfm = glm::inverse(trnsfm);*/
+
 
             uchar4 color = uchar4{sky.x*255, sky.y*255, sky.z*255, 255};
 
-            Ray r = Ray(Vec3{0,0, 3}, normalize(Vec3{ar*u*scale,v*scale,-1}));
+            Ray r = Ray(glm::vec3{0,0, 3}, normalize(glm::vec3{ar*u*scale,v*scale,-1}));
 
             HitInfo hit = HitInfo();
 
-            for (int st = 0; st < 250; st++)
+            for (int st = 0; st < 1000; st++)
             {
-                if (Sphere(Vec3{float(st)/500,0,0}, float(st)/2500).intersect(r, Matrix4{float4{}}, hit))
+                if (Sphere(glm::vec3{float(st)/500,0,0}, float(st)/2500).intersect(r, hit))
                 {
-                    Vec3 clr = st * hit.normal;
+                    glm::vec3 clr = hit.normal;
                     color.x = clr.x;
                     color.y = clr.y;
                     color.z = clr.z;
@@ -111,19 +116,12 @@ int main(int argc, char const *argv[])
 
     glCall(glEnable(GL_FRAMEBUFFER_SRGB));
 
-    /*glm::mat4 trnsfm(1.0f);
-    trnsfm = glm::scale(trnsfm, glm::vec3(2, 0.5, 1));
-    trnsfm = glm::translate(trnsfm, glm::vec3(1, 1, 0));
-    trnsfm = glm::inverse(trnsfm);*/
-
     // Main render loop
 
     initializeTexture(width, height);
     
     int numSMs;
     cudaDeviceGetAttribute(&numSMs, cudaDevAttrMultiProcessorCount, 0);
-
-    Tinge::Sphere s = Tinge::Sphere(Tinge::Vec3{0,0,0}, 0.4);
 
     while (!glfwWindowShouldClose(window)) 
     {
@@ -146,7 +144,7 @@ int main(int argc, char const *argv[])
 
         dim3 threadsPerBlock(2*numSMs, 2*numSMs);
         dim3 numBlocks((width + threadsPerBlock.x - 1) / (threadsPerBlock.x), (height + threadsPerBlock.y - 1) / (threadsPerBlock.y));
-        kernel<<<numBlocks, threadsPerBlock>>>(cudaSurface, s, width, height);
+        kernel<<<numBlocks, threadsPerBlock>>>(cudaSurface, width, height);
         
         cudaCall(cudaPeekAtLastError());
         cudaCall(cudaDeviceSynchronize());
