@@ -17,8 +17,10 @@
 // Math.h - STD math Library
 #include <math.h>
 
+#ifdef TINGE_DEBUG
 // Print progress to console while loading (large models)
 #define OBJL_CONSOLE_OUTPUT
+#endif
 
 // Namespace: OBJL
 //

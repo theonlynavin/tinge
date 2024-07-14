@@ -6,7 +6,7 @@
 struct Vertex
 {
     glm::vec3 position;
-    glm::vec2 texcoords;
+    glm::vec2 texcoord;
     glm::vec3 normal;
 };
 
@@ -68,7 +68,7 @@ public:
     /// @param v uv coordinatees of the point
     /// @return the texture coordinates
     __device__ __forceinline__ glm::vec2 getTexCoord(float u, float v) const {
-        return u * v1.texcoords + v * v2.texcoords + (1 - u - v) * v3.texcoords;
+        return u * v1.texcoord + v * v2.texcoord + (1 - u - v) * v3.texcoord;
     }
 
     __device__ void getMaterial()
