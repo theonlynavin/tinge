@@ -24,10 +24,12 @@ struct Ray
     glm::vec3 invdir;   // 1 / dir, precomputed for performance
 };
 
+class Triangle;
+
 /// HitInfo (stores ray-surface intersection data)
 struct HitInfo
 {
-    float dist = INFINITY;
-    glm::vec3 normal = {};
-    glm::vec3 point = {};
+    float dist = INFINITY;  // Distance from ray origin
+    float u, v;             // Barycentric coordinates
+    const Triangle* hit;    // Hit triangle
 };

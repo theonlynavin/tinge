@@ -2,54 +2,65 @@
 
 #define TINGE_DEBUG
 #include "handle.cuh"
-#include "sphere.cuh"
+#include "triangle.cuh"
+#include "mesh.cuh"
+#include "array.cuh"
 
 #include <glfw/glfw3.h>
 #include <cuda_gl_interop.h>
 
-__global__ void kernel(cudaSurfaceObject_t surface, int width, int height) 
+__global__ void createMesh(Mesh* toCreate)
+{   
+    if (threadIdx.x == 0 && blockIdx.x == 0) 
+    {
+        Array<int> indices = {0, 1, 2, 2, 1, 3};
+        Vertex v1 = Vertex{glm::vec3(-1,-0.5,0),glm::vec2(),glm::vec3(0,0,-1)};
+        Vertex v2 = Vertex{glm::vec3(1,-0.5,0),glm::vec2(),glm::vec3(0,0,-1)};
+        Vertex v3 = Vertex{glm::vec3(0,0.5,0),glm::vec2(),glm::vec3(0,0,-1)};
+        Vertex v4 = Vertex{glm::vec3(1.5,0.5,0),glm::vec2(),glm::vec3(0,0,-1)};
+        Array<Vertex> vertices = {v1, v2, v3, v4};
+
+        *toCreate = Mesh(vertices, indices);
+    }
+}
+
+__global__ void kernel(cudaSurfaceObject_t surface, int width, int height, Mesh* m) 
 {
     const float ar = float(width)/float(height);
     constexpr float scale = 0.7;
+    constexpr glm::vec3 blue = glm::vec3{0.5, 0.7, 0.9};
+    constexpr glm::vec3 white = glm::vec3{1, 1, 1};
  
-    for (int j = blockIdx.y * blockDim.y + threadIdx.y; j < height; j += blockDim.y * gridDim.y)
+    for (int y = blockIdx.y * blockDim.y + threadIdx.y; y < height; y += blockDim.y * gridDim.y)
     {            
-        for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < width; i += blockDim.x * gridDim.x)
+        for (int x = blockIdx.x * blockDim.x + threadIdx.x; x < width; x += blockDim.x * gridDim.x)
         {            
+            const float u = 2*float(x)/width-1;
+            const float v = 2*float(y)/height-1;
             
-            const float u = 2*float(i)/width-1;
-            const float v = 2*float(j)/height-1;
-            
-            constexpr glm::vec3 blue = glm::vec3{0.5, 0.7, 0.9};
-            constexpr glm::vec3 white = glm::vec3{1, 1, 1};
-            
-            float t = 0.5*(v+1);
-            glm::vec3 sky = glm::mix(white, blue, t);
+            glm::vec3 sky = glm::mix(white, blue, 0.5*(v+1));
 
-            /*glm::mat4 trnsfm(1.0f);
+            glm::mat4 trnsfm(1.0f);
             trnsfm = glm::scale(trnsfm, glm::vec3(2, 0.5, 1));
             trnsfm = glm::translate(trnsfm, glm::vec3(1, 1, 0));
-            trnsfm = glm::inverse(trnsfm);*/
+            trnsfm = glm::inverse(trnsfm);
 
+            uchar4 color = uchar4{(unsigned char)(sky.x*255), (unsigned char)(sky.y*255), (unsigned char)(sky.z*255), 255};
 
-            uchar4 color = uchar4{sky.x*255, sky.y*255, sky.z*255, 255};
-
-            Ray r = Ray(glm::vec3{0,0, 3}, normalize(glm::vec3{ar*u*scale,v*scale,-1}));
-
+            Ray r = Ray(glm::vec3{0,0,4}, normalize(glm::vec3{ar*u*scale,v*scale,-1}));
             HitInfo hit = HitInfo();
 
-            for (int st = 0; st < 1000; st++)
+            for (int i = 0; i < 100; i++)
             {
-                if (Sphere(glm::vec3{float(st)/500,0,0}, float(st)/2500).intersect(r, hit))
+                if ((m)->intersect(r, hit))
                 {
-                    glm::vec3 clr = hit.normal;
-                    color.x = clr.x;
-                    color.y = clr.y;
-                    color.z = clr.z;
+                    color.x = hit.hit->getNormal(hit.u, hit.v).x;
+                    color.y = hit.hit->getNormal(hit.u, hit.v).y;
+                    color.z = hit.hit->getNormal(hit.u, hit.v).z;
                 }
             }
 
-            surf2Dwrite(color, surface, i * sizeof(uchar4), j);
+            surf2Dwrite(color, surface, x * sizeof(uchar4), y);
         }   
     }
 }
@@ -77,6 +88,7 @@ void initializeTexture(int width, int height)
 
 void resizeWindow(GLFWwindow* window, int width, int height)
 {
+    cudaCall(cudaGraphicsUnregisterResource(interop.cuda_texture));
     glCall(glViewport(0, 0, width, height));
     initializeTexture(width, height);
 }
@@ -108,7 +120,7 @@ int main(int argc, char const *argv[])
         std::cerr << "Failed to initialize GLEW" << std::endl;
         return -1;
     }
-
+    
     // Check for CUDA availability
 
     int dev;
@@ -122,9 +134,16 @@ int main(int argc, char const *argv[])
     
     int numSMs;
     cudaDeviceGetAttribute(&numSMs, cudaDevAttrMultiProcessorCount, 0);
+    numSMs = 14;
+
+    Mesh* m;
+    cudaMalloc((void**)&m, sizeof(Mesh));
+    createMesh<<<1,1>>>(m);
+    cudaCall(cudaPeekAtLastError());
+    cudaCall(cudaDeviceSynchronize());
 
     while (!glfwWindowShouldClose(window)) 
-    {
+    {    
         float start_t = glfwGetTime();
 
         // Render to the texture
@@ -142,9 +161,9 @@ int main(int argc, char const *argv[])
         cudaSurfaceObject_t cudaSurface;
         cudaCall(cudaCreateSurfaceObject(&cudaSurface, &resDesc));
 
-        dim3 threadsPerBlock(2*numSMs, 2*numSMs);
+        dim3 threadsPerBlock(numSMs, numSMs);
         dim3 numBlocks((width + threadsPerBlock.x - 1) / (threadsPerBlock.x), (height + threadsPerBlock.y - 1) / (threadsPerBlock.y));
-        kernel<<<numBlocks, threadsPerBlock>>>(cudaSurface, width, height);
+        kernel<<<numBlocks, threadsPerBlock>>>(cudaSurface, width, height, m);
         
         cudaCall(cudaPeekAtLastError());
         cudaCall(cudaDeviceSynchronize());
@@ -172,12 +191,12 @@ int main(int argc, char const *argv[])
 
         // GLFW render calls
       
+        glfwGetWindowSize(window, &width, &height);
         glfwSwapBuffers(window);
         glfwPollEvents();
-
-        float final_t = glfwGetTime();
-
         glfwGetWindowSize(window, &width, &height);
+
+        float final_t = glfwGetTime();   
 
         std::cout << "CUDA: " << 1000 * (end_t - start_t) << "ms, OpenGL: " << 1000 * (final_t - end_t) << "ms\n";
         std::cout << "Framerate: " << 1 / (final_t - start_t) << "\n\033[A\033[A\r"; 
