@@ -5,26 +5,38 @@
 #include "triangle.cuh"
 #include "mesh.cuh"
 #include "array.cuh"
+#include "objl/OBJ_Loader.h"
 
 #include <glfw/glfw3.h>
 #include <cuda_gl_interop.h>
 
-__global__ void createMesh(Mesh* toCreate)
+
+__global__ void initializeMesh(Mesh* mesh, objl::Vertex* vertices, size_t numVertices, unsigned int* indices, size_t numIndices)
 {   
     if (threadIdx.x == 0 && blockIdx.x == 0) 
-    {
-        Array<int> indices = {0, 1, 2, 2, 1, 3};
-        Vertex v1 = Vertex{glm::vec3(-1,-0.5,0),glm::vec2(),glm::vec3(0,0,-1)};
-        Vertex v2 = Vertex{glm::vec3(1,-0.5,0),glm::vec2(),glm::vec3(0,0,-1)};
-        Vertex v3 = Vertex{glm::vec3(0,0.5,0),glm::vec2(),glm::vec3(0,0,-1)};
-        Vertex v4 = Vertex{glm::vec3(1.5,0.5,0),glm::vec2(),glm::vec3(0,0,-1)};
-        Array<Vertex> vertices = {v1, v2, v3, v4};
+    {        
+        Array<Vertex> v;
+        v.reserve(numVertices);
 
-        *toCreate = Mesh(vertices, indices);
+        for (size_t i = 0; i < numVertices; i++)
+        {
+            const objl::Vertex& vertex = vertices[i];
+
+            v[i].position = glm::vec3(vertex.Position.X, vertex.Position.Y, vertex.Position.Z);
+            v[i].texcoord = glm::vec2(vertex.TextureCoordinate.X, vertex.TextureCoordinate.Y);
+            v[i].normal = glm::vec3(vertex.Normal.X, vertex.Normal.Y, vertex.Normal.Z);
+        }
+
+        *mesh = Mesh(v, Array<unsigned int>(indices, numIndices));
     }
 }
 
-__global__ void kernel(cudaSurfaceObject_t surface, int width, int height, Mesh* m) 
+__global__ void updateObjects()
+{
+    
+}
+
+__global__ void renderImage(cudaSurfaceObject_t surface, int width, int height, Mesh* m, float t) 
 {
     const float ar = float(width)/float(height);
     constexpr float scale = 0.7;
@@ -41,28 +53,60 @@ __global__ void kernel(cudaSurfaceObject_t surface, int width, int height, Mesh*
             glm::vec3 sky = glm::mix(white, blue, 0.5*(v+1));
 
             glm::mat4 trnsfm(1.0f);
-            trnsfm = glm::scale(trnsfm, glm::vec3(2, 0.5, 1));
-            trnsfm = glm::translate(trnsfm, glm::vec3(1, 1, 0));
-            trnsfm = glm::inverse(trnsfm);
+            trnsfm = glm::translate(trnsfm, glm::vec3(0, -1, 0));
+            trnsfm = glm::rotate(trnsfm, t, glm::normalize(glm::vec3(0, 1, 0)));
+            trnsfm = glm::scale(trnsfm, glm::vec3(0.02));
 
             uchar4 color = uchar4{(unsigned char)(sky.x*255), (unsigned char)(sky.y*255), (unsigned char)(sky.z*255), 255};
 
             Ray r = Ray(glm::vec3{0,0,4}, normalize(glm::vec3{ar*u*scale,v*scale,-1}));
             HitInfo hit = HitInfo();
 
-            for (int i = 0; i < 100; i++)
+            m->apply(trnsfm);
+
+            if (m->intersect(r, hit))
             {
-                if ((m)->intersect(r, hit))
-                {
-                    color.x = hit.hit->getNormal(hit.u, hit.v).x;
-                    color.y = hit.hit->getNormal(hit.u, hit.v).y;
-                    color.z = hit.hit->getNormal(hit.u, hit.v).z;
-                }
+                glm::vec3 n = hit.hit->getNormal(hit.u, hit.v);
+
+                color.x = 255 * n.x;
+                color.y = 255 * n.y;
+                color.z = 255 * n.z;
             }
 
             surf2Dwrite(color, surface, x * sizeof(uchar4), y);
         }   
     }
+}
+
+std::vector<Mesh*> loadModel(const std::string& path)
+{
+    std::vector<Mesh*> meshes;
+
+    objl::Loader loader;
+    if (loader.LoadFile(path))
+    {
+        for (objl::Mesh& mesh : loader.LoadedMeshes)
+        {
+            Mesh* m;
+            cudaCall(cudaMalloc((void**)&m, sizeof(Mesh))); 
+
+            objl::Vertex* p_vertices;
+            cudaCall(cudaMallocHost((void**)&p_vertices, sizeof(objl::Vertex) * mesh.Vertices.size()));
+            cudaCall(cudaMemcpy(p_vertices, &(mesh.Vertices.front()), sizeof(objl::Vertex) * mesh.Vertices.size(), cudaMemcpyHostToHost));
+
+            unsigned int* p_indices;
+            cudaCall(cudaMallocHost((void**)&p_indices, sizeof(unsigned int) * mesh.Indices.size()));
+            cudaCall(cudaMemcpy(p_indices, &(mesh.Indices.front()), sizeof(unsigned int) * mesh.Indices.size(), cudaMemcpyHostToHost));
+
+            initializeMesh<<<1, 1>>>(m, p_vertices, mesh.Vertices.size(), p_indices, mesh.Indices.size());
+            cudaCall(cudaPeekAtLastError());
+            cudaCall(cudaDeviceSynchronize());
+            
+            meshes.push_back(m);
+        }
+    }
+
+    return meshes;
 }
 
 struct Interop
@@ -99,8 +143,7 @@ int main(int argc, char const *argv[])
 
     if (!glfwInit()) 
     {
-        std::cerr << "Failed to initialize GLFW" << std::endl;
-        return -1;
+        tingeError("Failed to initialize GLFW");
     }
 
     // Create Window
@@ -110,6 +153,12 @@ int main(int argc, char const *argv[])
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     GLFWwindow* window = glfwCreateWindow(width, height, "Tinge", NULL, NULL);
+
+    if (window == NULL)
+    {
+        tingeError("Failed to create window!");
+    }
+
     glfwSetWindowSizeCallback(window, resizeWindow);
     glfwMakeContextCurrent(window);
 
@@ -117,8 +166,7 @@ int main(int argc, char const *argv[])
 
     if (glewInit() != GLEW_OK) 
     {
-        std::cerr << "Failed to initialize GLEW" << std::endl;
-        return -1;
+        tingeError("Failed to initialize GLEW");
     }
     
     // Check for CUDA availability
@@ -136,11 +184,7 @@ int main(int argc, char const *argv[])
     cudaDeviceGetAttribute(&numSMs, cudaDevAttrMultiProcessorCount, 0);
     numSMs = 14;
 
-    Mesh* m;
-    cudaMalloc((void**)&m, sizeof(Mesh));
-    createMesh<<<1,1>>>(m);
-    cudaCall(cudaPeekAtLastError());
-    cudaCall(cudaDeviceSynchronize());
+    std::vector<Mesh*> cube = loadModel("/home/navin/tinge/assets/low_poly_rabbit.obj");
 
     while (!glfwWindowShouldClose(window)) 
     {    
@@ -163,7 +207,7 @@ int main(int argc, char const *argv[])
 
         dim3 threadsPerBlock(numSMs, numSMs);
         dim3 numBlocks((width + threadsPerBlock.x - 1) / (threadsPerBlock.x), (height + threadsPerBlock.y - 1) / (threadsPerBlock.y));
-        kernel<<<numBlocks, threadsPerBlock>>>(cudaSurface, width, height, m);
+        renderImage<<<numBlocks, threadsPerBlock>>>(cudaSurface, width, height, cube[0], start_t);
         
         cudaCall(cudaPeekAtLastError());
         cudaCall(cudaDeviceSynchronize());

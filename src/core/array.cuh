@@ -44,6 +44,16 @@ public:
         memcpy(m_data, data, count * sizeof(T));
     }
 
+
+    /// @brief Initializes the array with *a copy* of the other array
+    /// @param other The other array
+    __host__ __device__ Array(const Array<T>& other)
+        : m_count(other.m_count)
+    {
+        m_data = (T*)malloc(m_count * sizeof(T));
+        memcpy(m_data, other.m_data, m_count * sizeof(T));
+    }
+
     /// @brief Default destructor, frees reserved memory
     __host__ __device__ ~Array()
     {
@@ -53,11 +63,11 @@ public:
     /// @brief Clears the array elements
     __host__ __device__ void clear()
     {
-        memset(m_data, 0, getSize());
+        memset(m_data, 0, size());
     }
 
     /// @brief De-allocates all reserved memory 
-    __host__ __device__ void clear()
+    __host__ __device__ void empty()
     {
         free(m_data);
     }
@@ -84,16 +94,6 @@ public:
         }
     }
 
-    __host__ __device__ __forceinline__ T& operator[](int idx) 
-    { 
-        return m_data[idx]; 
-    }
-
-    __host__ __device__ __forceinline__ const T& operator[](int idx) const 
-    { 
-        return m_data[idx]; 
-    }
-    
     /// @return Pointer to the data
     __host__ __device__ __forceinline__ constexpr T* ptr() const 
     { 
@@ -111,4 +111,18 @@ public:
     { 
         return m_count; 
     }   
+
+    // Basic operations
+
+    __host__ __device__ __forceinline__ T& operator[](int idx) { return m_data[idx]; }
+
+    __host__ __device__ __forceinline__ const T& operator[](int idx) const { return m_data[idx]; }
+    
+    __host__ __device__ __forceinline__ T* begin() { return &m_data[0]; }
+    
+    __host__ __device__ __forceinline__ const T* begin() const { return &m_data[0]; }
+    
+    __host__ __device__ __forceinline__ T* end() { return &m_data[m_count]; }
+    
+    __host__ __device__ __forceinline__ const T* end() const { return &m_data[m_count]; }
 };
