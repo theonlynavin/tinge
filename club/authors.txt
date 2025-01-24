@@ -15,3 +15,6 @@ NUTHAN AE24B106
 
 Swamishiju EE24B148
 PLATYPUS?!
+
+Pulkit DA24B047
+Today I learned git
