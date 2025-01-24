@@ -3,3 +3,7 @@ Navin EE23B047
 
 KK EE23B030
 "Remember, in the equation of life, always strive to add more laughter than variables!"
+
+AaryanSriram CS24B030
+"I've started learning Git"
+
