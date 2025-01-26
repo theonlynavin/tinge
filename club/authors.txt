@@ -1,5 +1,5 @@
 Navin EE23B047
-"2b|~2b~>?" 
+"2b|!2b~>?" 
 
 KK EE23B030
 "Remember, in the equation of life, always strive to add more laughter than variables!"
@@ -17,10 +17,10 @@ NUTHAN AE24B106
 "STILL FIGURING OUT ThIS"
 
 Swamishiju EE24B148
-PLATYPUS?!
+"PLATYPUS?!"
 
 Pulkit DA24B047
-Today I learned git
+"Today I learned git"
 
 Anushhka CE24B046
-Lessfgo
+"Lessfgo"
