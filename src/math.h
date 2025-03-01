@@ -3,6 +3,7 @@
 #include <iostream>
 
 #define _USE_MATH_DEFINES
+#define TINGE_EPSILON 1e-8f
 #include <cmath>
 
 // A three dimensional vector
@@ -127,7 +128,7 @@ struct Mat3
         // Calculate the determinant
         float det = m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
 
-        if (det < FLT_EPSILON)
+        if (det < TINGE_EPSILON)
         {
             throw std::runtime_error("Matrix is singular, cannot find inverse.");
         }
@@ -194,7 +195,7 @@ struct Mat4
         // Calculate the determinant
         float det = m[0][0] * (m[1][1] * A2323 - m[1][2] * A1323 + m[1][3] * A1223) - m[0][1] * (m[1][0] * A2323 - m[1][2] * A0323 + m[1][3] * A0223) + m[0][2] * (m[1][0] * A1323 - m[1][1] * A0323 + m[1][3] * A0123) - m[0][3] * (m[1][0] * A1223 - m[1][1] * A0223 + m[1][2] * A0123);
 
-        if (det < FLT_EPSILON)
+        if (det < TINGE_EPSILON)
         {
             throw std::runtime_error("Matrix is singular, cannot find inverse.");
         }
