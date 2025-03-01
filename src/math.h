@@ -286,6 +286,15 @@ inline Mat3 operator*(const Mat3 &a, const Mat3 &b)
     return result;
 }
 
+inline Vec3 operator*(const Mat3 &a, const Vec3 &b)
+{
+    Vec3 result;
+    result.x = a.m[0][0] * b.x + a.m[0][1] * b.y + a.m[0][2] * b.z;
+    result.y = a.m[1][0] * b.x + a.m[1][1] * b.y + a.m[1][2] * b.z;
+    result.z = a.m[2][0] * b.x + a.m[2][1] * b.y + a.m[2][2] * b.z;
+    return result;
+}
+
 inline Mat4 operator+(const Mat4 &a, const Mat4 &b)
 {
     Mat4 result;
@@ -314,6 +323,25 @@ inline Mat4 operator*(const Mat4 &a, const Mat4 &b)
             for (int k = 0; k < 4; ++k)
                 result.m[i][j] += a.m[i][k] * b.m[k][j];
         }
+    return result;
+}
+
+inline Vec3 operator*(const Mat4 &a, const Vec3 &b)
+{
+    Vec3 result;
+    result.x = a.m[0][0] * b.x + a.m[0][1] * b.y + a.m[0][2] * b.z + a.m[0][3];
+    result.y = a.m[1][0] * b.x + a.m[1][1] * b.y + a.m[1][2] * b.z + a.m[1][3];
+    result.z = a.m[2][0] * b.x + a.m[2][1] * b.y + a.m[2][2] * b.z + a.m[2][3];
+    return result;
+}
+
+inline Vec4 operator*(const Mat4 &a, const Vec4 &b)
+{
+    Vec4 result;
+    result.x = a.m[0][0] * b.x + a.m[0][1] * b.y + a.m[0][2] * b.z + a.m[0][3] * b.w;
+    result.y = a.m[1][0] * b.x + a.m[1][1] * b.y + a.m[1][2] * b.z + a.m[1][3] * b.w;
+    result.z = a.m[2][0] * b.x + a.m[2][1] * b.y + a.m[2][2] * b.z + a.m[2][3] * b.w;
+    result.w = a.m[3][0] * b.x + a.m[3][1] * b.y + a.m[3][2] * b.z + a.m[3][3] * b.w;
     return result;
 }
 
