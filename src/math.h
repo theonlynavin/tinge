@@ -1,8 +1,13 @@
 #pragma once
 
+#include <stdexcept>
 #define _USE_MATH_DEFINES
 #define TINGE_EPSILON 1e-8f
 #include <cmath>
+
+static inline bool is_zero(float f) {
+  return f < TINGE_EPSILON && f > -TINGE_EPSILON;
+}
 
 // A three dimensional vector
 struct Vec3 {
@@ -134,7 +139,7 @@ struct Mat3 {
                 m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
                 m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
 
-    if (det < TINGE_EPSILON) {
+    if (is_zero(det)) {
       throw std::runtime_error("Matrix is singular, cannot find inverse.");
     }
 
@@ -203,7 +208,7 @@ struct Mat4 {
         m[0][2] * (m[1][0] * A1323 - m[1][1] * A0323 + m[1][3] * A0123) -
         m[0][3] * (m[1][0] * A1223 - m[1][1] * A0223 + m[1][2] * A0123);
 
-    if (det < TINGE_EPSILON) {
+    if (is_zero(det)) {
       throw std::runtime_error("Matrix is singular, cannot find inverse.");
     }
 

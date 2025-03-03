@@ -19,6 +19,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${PLATFORM_NAME})
 set(SOURCES
     src/main.cpp
     src/util.cpp
+    src/objects.cpp
 )
 
 # Build tinge :)
