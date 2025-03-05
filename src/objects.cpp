@@ -17,18 +17,23 @@ Sphere::Sphere(Vec3 centre, float radius) : c(centre), r(radius) {};
 Sphere::~Sphere() {};
 
 bool intersect(const Ray &ray, const Sphere &sph) {
-    float b = 2 * (dot(ray.direction, ray.origin - sph.c));
+    float b = (dot(ray.direction, ray.origin - sph.c));
     float c = dot(ray.origin - sph.c, ray.origin - sph.c) - sph.r * sph.r;
-
-    float del = b * b - 4 * c;
-
-    return del > 0;
+    if (b * b - c < 0) {
+        return false;
+    }
+    float factor = sqrt(b * b - c);
+    return b < factor;
 }
 
 bool intersect(const Ray &ray, const Plane &plane) {
     float d = dot(ray.direction, plane.n);
-
-    return !is_zero(d);
+    if (d < 1e-6) {
+        return false;
+    }
+    float t =
+        ((plane.p - ray.origin).dot(plane.n)) / (ray.direction.dot(plane.n));
+    return t > 0;
 }
 
 bool intersect(const Ray &ray, const Triangle &tri) {
