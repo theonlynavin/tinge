@@ -1,6 +1,6 @@
 #pragma once
+#include "camera.h"
 #include "math.h"
-// WARN: Need to include lib for Ray
 
 struct Triangle {
     Vec3 v1, v2, v3; // Position vectors of triangle vertices
