@@ -1,27 +1,25 @@
 #pragma once
 #include "camera.h"
+#include "frame.h"
 #include "math.h"
 
-// TODO: Include Frame
+struct IntersectionOut {
+    Vec3 normal;
+    float t;
+    Vec3 point; // World Space
+    bool hit;
 
-struct Frame {
-    Mat4 worldToFrame, frameToWorld;
-    Ray convertToWorld(const Ray &ray) {
-        return Ray(Vec3(0, 0, 0), Vec3(0, 0, 0));
-    }
-    Ray convertToFrame(const Ray &ray) {
-        return Ray(Vec3(0, 0, 0), Vec3(0, 0, 0));
-    }
+    IntersectionOut(Vec3 normal, float t, Vec3 point);
 };
 
 struct AbstractShape {
     Frame frame;
-    bool intersect(const Ray &ray);
+    IntersectionOut intersect(const Ray &ray);
     Vec3 get_normal(const Vec3 &point);
 
   protected:
     // Ray in World space
-    virtual bool _intersect(const Ray &ray) = 0;
+    virtual bool _intersect(const Ray &ray, IntersectionOut &intsec_out) = 0;
 
     // Point in World space
     virtual Vec3 _get_normal(const Vec3 &point) = 0;
@@ -35,7 +33,7 @@ struct Triangle : AbstractShape {
     ~Triangle();
 
   protected:
-    bool _intersect(const Ray &ray) override;
+    bool _intersect(const Ray &ray, IntersectionOut &intsec_out) override;
     Vec3 _get_normal(const Vec3 &point) override;
 };
 
@@ -47,7 +45,7 @@ struct Sphere : AbstractShape {
     ~Sphere();
 
   protected:
-    bool _intersect(const Ray &ray) override;
+    bool _intersect(const Ray &ray, IntersectionOut &intsec_out) override;
     Vec3 _get_normal(const Vec3 &point) override;
 };
 
@@ -59,6 +57,6 @@ struct Plane : AbstractShape {
     ~Plane();
 
   protected:
-    bool _intersect(const Ray &ray) override;
+    bool _intersect(const Ray &ray, IntersectionOut &intsec_out) override;
     Vec3 _get_normal(const Vec3 &point) override;
 };
