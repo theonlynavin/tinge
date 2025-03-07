@@ -60,3 +60,23 @@ struct Plane : AbstractShape {
     bool _intersect(const Ray &ray, IntersectionOut &intsec_out) override;
     Vec3 _get_normal(const Vec3 &point) override;
 };
+std::pair<AbstractShape*, IntersectionOut> closestIntersect (const std::vector<AbstractShape*> &v, const Ray& ray)
+{
+  IntersectionOut min_hit;
+  min_hit.t = TINGE_INFINITY;
+  AbstractShape* min_shape = NULL;
+  for(int i=0; i<v.size(); i++)
+  {
+    IntersectionOut ans = v[i]->intersect(ray);
+    if(ans.hit)
+    {
+      if(ans.t < min_hit.t)
+      {
+        min_hit = ans;
+        min_shape=v[i];
+      }
+    }
+  }
+
+  return std::pair<AbstractShape*, IntersectionOut>(min_shape, min_hit);
+}

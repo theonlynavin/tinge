@@ -1,6 +1,11 @@
 #include "objects.h"
 #include "math.h"
 
+IntersectionOut::IntersectionOut()
+    : normal(Vec3(0, 0, 0)), point(Vec3(0,0,0)), hit(false), t(TINGE_INFINITY)
+{
+}
+
 IntersectionOut::IntersectionOut(Vec3 normal, float t, Vec3 point)
     : normal(normal), t(t), point(point), hit(false) {};
 
