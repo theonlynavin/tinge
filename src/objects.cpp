@@ -3,50 +3,37 @@
 
 // TODO: Return point
 // FIX: make intsec out struct prolly
+//
+//
 
-Plane::Plane(Vec3 normal, Vec3 point) : n(normal), p(point) {};
-Plane::~Plane() {};
+bool AbstractShape::intersect(const Ray &ray) {
+    Ray frame_ray = this->frame.convertToFrame(ray);
+    return this->_intersect(frame_ray);
+}
+
+Vec3 AbstractShape::get_normal(const Vec3 &point) {
+    Vec3 frame_point = this->frame.frameToWorld & point;
+    Vec3 frame_normal = this->_get_normal(frame_point);
+    return transpose(frame.worldToFrame) & frame_normal;
+}
 
 Triangle::Triangle(Vec3 v1, Vec3 v2, Vec3 v3) : v1(v1), v2(v2), v3(v3) {
     n = cross(v1 - v2, v2 - v3);
     n = n.normalized();
 };
-Triangle::~Triangle() {};
+Triangle::~Triangle() {}
 
-Sphere::Sphere(Vec3 centre, float radius) : c(centre), r(radius) {};
-Sphere::~Sphere() {};
-
-bool intersect(const Ray &ray, const Sphere &sph) {
-    float b = (dot(ray.direction, ray.origin - sph.c));
-    float c = dot(ray.origin - sph.c, ray.origin - sph.c) - sph.r * sph.r;
-    if (b * b - c < 0) {
-        return false;
-    }
-    float factor = sqrt(b * b - c);
-    return b < factor;
-}
-
-bool intersect(const Ray &ray, const Plane &plane) {
-    float d = dot(ray.direction, plane.n);
-    if (d < 1e-6) {
-        return false;
-    }
-    float t =
-        ((plane.p - ray.origin).dot(plane.n)) / (ray.direction.dot(plane.n));
-    return t > 0;
-}
-
-bool intersect(const Ray &ray, const Triangle &tri) {
-    float d = dot(ray.direction, tri.n);
+bool Triangle::_intersect(const Ray &ray) {
+    float d = dot(ray.direction, this->n);
 
     if (is_zero(d))
         return false;
 
     float a[3]; // Barycentric coordinates
 
-    Vec3 e1 = tri.v2 - tri.v1;
-    Vec3 e2 = tri.v3 - tri.v1;
-    Vec3 lhs = ray.origin - tri.v1;
+    Vec3 e1 = this->v2 - this->v1;
+    Vec3 e2 = this->v3 - this->v1;
+    Vec3 lhs = ray.origin - this->v1;
 
     Vec3 c1 = cross(e1, ray.direction);
     Vec3 c2 = cross(e2, ray.direction);
@@ -58,10 +45,43 @@ bool intersect(const Ray &ray, const Triangle &tri) {
 
     if (!(a[0] > 0 && a[1] > 0 && a[2] > 0))
         return false;
-    Vec3 intersection_point = tri.v1 * a[0] + tri.v2 * a[1] + tri.v3 * a[2];
+    Vec3 intersection_point =
+        this->v1 * a[0] + this->v2 * a[1] + this->v3 * a[2];
 
     // Assuming normalized direction
     float lambda = dot(intersection_point - ray.origin, ray.direction);
 
     return lambda > 0;
 }
+
+Vec3 Triangle::_get_normal(const Vec3 &point) { return this->n; }
+
+Sphere::Sphere(Vec3 centre, float radius) : c(centre), r(radius) {};
+Sphere::~Sphere() {};
+
+bool Sphere::_intersect(const Ray &ray) {
+    float b = (dot(ray.direction, ray.origin - this->c));
+    float c =
+        dot(ray.origin - this->c, ray.origin - this->c) - this->r * this->r;
+    if (b * b - c < 0) {
+        return false;
+    }
+    float factor = sqrt(b * b - c);
+    return b < factor;
+}
+
+Vec3 Sphere::_get_normal(const Vec3 &point) {
+    Vec3 ret = point - this->c;
+    return normalize(ret);
+}
+Plane::Plane(Vec3 normal, Vec3 point) : n(normal), p(point) {};
+Plane::~Plane() {};
+bool Plane::_intersect(const Ray &ray) {
+    float d = dot(ray.direction, this->n);
+    if (d < 0) {
+        return false;
+    }
+    float t = (dot(this->p - ray.origin, this->n)) / d;
+    return t > 0;
+}
+Vec3 Plane::_get_normal(const Vec3 &point) { return this->n; }

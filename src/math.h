@@ -354,6 +354,14 @@ inline Vec3 operator*(const Mat4 &a, const Vec3 &b) {
     return result;
 }
 
+inline Vec3 operator&(const Mat4 &a, const Vec3 &b) {
+    Vec3 result;
+    result.x = a.m[0][0] * b.x + a.m[0][1] * b.y + a.m[0][2] * b.z;
+    result.y = a.m[1][0] * b.x + a.m[1][1] * b.y + a.m[1][2] * b.z;
+    result.z = a.m[2][0] * b.x + a.m[2][1] * b.y + a.m[2][2] * b.z;
+    return result;
+}
+
 inline Vec4 operator*(const Mat4 &a, const Vec4 &b) {
     Vec4 result;
     result.x =
