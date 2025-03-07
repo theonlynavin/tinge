@@ -1,5 +1,6 @@
 #include "math.h"
 #include "camera.h"
+
 Ray :: Ray(Vec3 origin , Vec3 direction) : origin(origin), direction(normalize(direction)) {} // Parameterized constructor
 // Direction must be normalized while taking in
 Ray :: ~Ray() {}
@@ -28,5 +29,5 @@ Ray Camera :: generate_ray(float u, float v) {
     Vec3 direction(x_coord, y_coord, -focal_length);
     // Position vector for the given NDC{assumed range [0,1]}
     
-    return Ray((frame).frameToWorld * origin, ((frame).frameToWorld&direction).normalized());
-}
+    return Ray(frame.frameToWorld * origin, (frame.frameToWorld&direction).normalized());
+
