@@ -32,7 +32,7 @@ Triangle::Triangle(Vec3 v1, Vec3 v2, Vec3 v3) : v1(v1), v2(v2), v3(v3) {
 };
 Triangle::~Triangle() {}
 
-bool Triangle::_intersect(const Ray &ray, IntersectionOut &intsec_out) {
+bool Triangle::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
     float d = dot(ray.direction, this->n);
 
     if (is_zero(d))
@@ -59,7 +59,9 @@ bool Triangle::_intersect(const Ray &ray, IntersectionOut &intsec_out) {
 
     // Assuming normalized direction
     float lambda = dot(intersection_point - ray.origin, ray.direction);
-
+    intersect_out.normal = this->n;
+    intersect_out.t = lambda;
+    intersect_out.point = intersection_point;
     return lambda > 0;
 }
 
@@ -68,7 +70,7 @@ Vec3 Triangle::_get_normal(const Vec3 &point) { return this->n; }
 Sphere::Sphere(Vec3 centre, float radius) : c(centre), r(radius) {};
 Sphere::~Sphere() {};
 
-bool Sphere::_intersect(const Ray &ray, IntersectionOut &intsec_out) {
+bool Sphere::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
     float b = (dot(ray.direction, ray.origin - this->c));
     float c =
         dot(ray.origin - this->c, ray.origin - this->c) - this->r * this->r;
@@ -76,7 +78,13 @@ bool Sphere::_intersect(const Ray &ray, IntersectionOut &intsec_out) {
         return false;
     }
     float factor = sqrt(b * b - c);
-    return b < factor;
+
+    float t = -b + factor;
+    Vec3 point = ray.at(t);
+    intersect_out.t = t;
+    intersect_out.point = point;
+    intersect_out.normal = point - this->c;
+    return t > 0;
 }
 
 Vec3 Sphere::_get_normal(const Vec3 &point) {
@@ -85,12 +93,18 @@ Vec3 Sphere::_get_normal(const Vec3 &point) {
 }
 Plane::Plane(Vec3 normal, Vec3 point) : n(normal), p(point) {};
 Plane::~Plane() {};
-bool Plane::_intersect(const Ray &ray, IntersectionOut &intsec_out) {
+
+bool Plane::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
     float d = dot(ray.direction, this->n);
     if (d < 0) {
         return false;
     }
     float t = (dot(this->p - ray.origin, this->n)) / d;
+    intersect_out.t = t;
+    intersect_out.normal = this->n;
+
+    intersect_out.point = ray.at(t);
+
     return t > 0;
 }
 Vec3 Plane::_get_normal(const Vec3 &point) { return this->n; }
