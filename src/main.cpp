@@ -1,5 +1,6 @@
-#include <iostream>
+#include "objects.h"
 #include "util.h"
+#include <iostream>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image/stb_image_write.h>
@@ -7,23 +8,20 @@
 #define WIDTH 1920
 #define HEIGHT 1080
 
-int main()
-{
+int main() {
     std::cout << "Hello there!" << std::endl;
 
     // Example vector code
-    
+
     Vec3 sky_blue = Vec3(0.1f, 0.5f, 0.9f);
     Vec3 sky_white = Vec3(1, 1, 1);
 
     unsigned char *data = new unsigned char[WIDTH * HEIGHT * 3];
 
-    for (int i = 0; i < WIDTH; i++)
-    {
-        for (int j = 0; j < HEIGHT; j++)
-        {
+    for (int i = 0; i < WIDTH; i++) {
+        for (int j = 0; j < HEIGHT; j++) {
             int pix = WIDTH * j + i;
-            
+
             // NDC coordinates
             float u = (float)i / WIDTH;
             float v = 1 - (float)j / HEIGHT;
@@ -37,7 +35,7 @@ int main()
             data[pix * 3 + 2] = (unsigned char)(255 * color.z);
         }
     }
-    
+
     stbi_write_png(".//test.png", 1920, 1080, 3, data, 0);
     delete[] data;
 
