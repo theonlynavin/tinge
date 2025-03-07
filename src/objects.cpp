@@ -6,9 +6,14 @@
 //
 //
 
-bool AbstractShape::intersect(const Ray &ray) {
+IntersectionOut::IntersectionOut(Vec3 normal, float t, Vec3 point)
+    : normal(normal), t(t), point(point), hit(false) {};
+
+IntersectionOut AbstractShape::intersect(const Ray &ray) {
     Ray frame_ray = this->frame.convertToFrame(ray);
-    return this->_intersect(frame_ray);
+    IntersectionOut intsec_out(Vec3(0, 0, 0), 0, Vec3(0, 0, 0));
+    this->_intersect(frame_ray, intsec_out);
+    return intsec_out;
 }
 
 Vec3 AbstractShape::get_normal(const Vec3 &point) {
