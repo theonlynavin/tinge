@@ -93,6 +93,7 @@ Vec3 Sphere::_get_normal(const Vec3 &point) {
 }
 Plane::Plane(Vec3 normal, Vec3 point) : n(normal), p(point) {};
 Plane::~Plane() {};
+
 bool Plane::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
     float d = dot(ray.direction, this->n);
     if (d < 0) {
