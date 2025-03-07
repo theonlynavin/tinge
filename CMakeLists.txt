@@ -20,6 +20,8 @@ set(SOURCES
     src/main.cpp
     src/util.cpp
     src/objects.cpp
+    src/camera.cpp
+    src/frame.cpp
 )
 
 # Build tinge :)

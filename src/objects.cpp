@@ -2,20 +2,16 @@
 #include "math.h"
 
 IntersectionOut::IntersectionOut()
-    : normal(Vec3(0, 0, 0)), point(Vec3(0,0,0)), hit(false), t(TINGE_INFINITY)
-{
-}
-
-IntersectionOut::IntersectionOut(Vec3 normal, float t, Vec3 point)
-    : normal(normal), t(t), point(point), hit(false) {};
+    : normal(Vec3(0, 0, 0)), point(Vec3(0, 0, 0)), hit(false),
+      t(TINGE_INFINITY) {}
 
 IntersectionOut AbstractShape::intersect(const Ray &ray) {
     Ray frame_ray = ray;
     frame_ray.origin = this->frame.worldToFrame * frame_ray.origin;
-    frame_ray.direction = this->frame.worldToFrame & frame_ray.origin;
+    frame_ray.direction = this->frame.worldToFrame & frame_ray.direction;
 
     frame_ray.direction = normalize(frame_ray.direction);
-    IntersectionOut intsec_out(Vec3(0, 0, 0), 0, Vec3(0, 0, 0));
+    IntersectionOut intsec_out;
     bool hit = this->_intersect(frame_ray, intsec_out);
     intsec_out.hit = hit;
     if (!hit)
@@ -113,3 +109,21 @@ bool Plane::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
     return t > 0;
 }
 Vec3 Plane::_get_normal(const Vec3 &point) { return this->n; }
+
+std::pair<AbstractShape *, IntersectionOut>
+closestIntersect(const std::vector<AbstractShape *> &v, const Ray &ray) {
+    IntersectionOut min_hit;
+    min_hit.t = TINGE_INFINITY;
+    AbstractShape *min_shape = NULL;
+    for (int i = 0; i < v.size(); i++) {
+        IntersectionOut ans = v[i]->intersect(ray);
+        if (ans.hit) {
+            if (ans.t < min_hit.t) {
+                min_hit = ans;
+                min_shape = v[i];
+            }
+        }
+    }
+
+    return std::pair<AbstractShape *, IntersectionOut>(min_shape, min_hit);
+}
