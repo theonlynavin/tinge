@@ -3,6 +3,7 @@
 #include <stdexcept>
 #define _USE_MATH_DEFINES
 #define TINGE_EPSILON 1e-8f
+#define TINGE_INFINITY 1e+8f
 #include <cmath>
 
 static inline bool is_zero(float f) {
