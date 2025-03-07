@@ -7,7 +7,6 @@ Ray ::Ray(Vec3 origin, Vec3 direction)
 // Direction must be normalized while taking in
 
 Vec3 Ray::at(float t) const {
-Vec3 Ray::at(float t) const {
     return origin + direction * t;
 } // Should return origin + t*direction;
 
@@ -33,4 +32,4 @@ Ray Camera ::generate_ray(float u, float v) {
     // Position vector for the given NDC{assumed range [0,1]}
     
     return Ray(frame.frameToWorld * origin, (frame.frameToWorld&direction).normalized());
-
+}
