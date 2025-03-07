@@ -1,6 +1,7 @@
 #pragma once
 #include "frame.h"
 #include "math.h"
+
 struct Ray {
     Vec3 origin;
     Vec3 direction;
@@ -11,8 +12,8 @@ struct Ray {
     Vec3 at(float t) const;
     // Should return origin + t*direction;
 };
-class Camera {
-  public:
+
+struct Camera {
     float vertical_fov;
     int film_width, film_height;
     float focal_length;

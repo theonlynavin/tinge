@@ -8,7 +8,7 @@ IntersectionOut::IntersectionOut()
 IntersectionOut AbstractShape::intersect(const Ray &ray) {
     Ray frame_ray = ray;
     frame_ray.origin = this->frame.worldToFrame * frame_ray.origin;
-    frame_ray.direction = this->frame.worldToFrame & frame_ray.origin;
+    frame_ray.direction = this->frame.worldToFrame & frame_ray.direction;
 
     frame_ray.direction = normalize(frame_ray.direction);
     IntersectionOut intsec_out;
