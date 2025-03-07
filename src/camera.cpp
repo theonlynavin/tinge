@@ -1,63 +1,33 @@
-#include "objects.h"
 #include "math.h"
+#include "camera.h"
 
-// TODO: Return point
-// FIX: make intsec out struct prolly
+Ray :: Ray(Vec3 origin , Vec3 direction) : origin(origin), direction(normalize(direction)) {} // Parameterized constructor
+// Direction must be normalized while taking in
+Ray :: ~Ray() {}
 
-Plane::Plane(Vec3 normal, Vec3 point) : n(normal), p(point) {};
-Plane::~Plane() {};
+Vec3 Ray::at(float t) {
+    return origin + direction * t;
+} // Should return origin + t*direction;
 
-Triangle::Triangle(Vec3 v1, Vec3 v2, Vec3 v3) : v1(v1), v2(v2), v3(v3) {
-    n = cross(v1 - v2, v2 - v3);
-    n = n.normalized();
-};
-Triangle::~Triangle() {};
+Camera :: Camera(float vertical_fov , int film_width , int film_height , float focal_length)
+: vertical_fov(vertical_fov), film_width(film_width), 
+film_height(film_height), focal_length(focal_length) {} 
 
-Sphere::Sphere(Vec3 centre, float radius) : c(centre), r(radius) {};
-Sphere::~Sphere() {};
+Camera :: ~Camera() {}
 
-bool intersect(const Ray &ray, const Sphere &sph) {
-    float b = (dot(ray.direction, ray.origin - sph.c));
-    float c = dot(ray.origin - sph.c, ray.origin - sph.c) - sph.r * sph.r;
-    if(b*b - c <0){return false ;}
-    float factor = sqrt(b*b -c);  
-    return b<factor ;                            
+Ray Camera :: generate_ray(float u, float v) {
+
+    // Given NDC coordinates (u, v), should generate the corresponding ray
+    float aspect_ratio = static_cast<float>(film_width) / film_height;
+    float half_height = (focal_length) * tan((vertical_fov) / 2);
+    float half_width = aspect_ratio * half_height;
+
+    float x_coord = (2 * u - 1) * half_width;
+    float y_coord = (2 * v - 1) * half_height;
+
+    Vec3 origin(0, 0, 0); // All rays start from the pin-hole(assumed at origin)
+    Vec3 direction(x_coord, y_coord, -focal_length);
+    // Position vector for the given NDC{assumed range [0,1]}
     
-}
+    return Ray(frame.frameToWorld * origin, (frame.frameToWorld&direction).normalized());
 
-bool intersect(const Ray &ray, const Plane &plane) {
-    float d = dot(ray.direction, plane.n);
-    if(d<1e-6){return false;}
-    float t = ((plane.p-ray.origin).dot(plane.n))/(ray.direction.dot(plane.n));
-    return t>0 ; 
-}
-
-bool intersect(const Ray &ray, const Triangle &tri) {
-    float d = dot(ray.direction, tri.n);
-
-    if (is_zero(d))
-        return false;
-
-    float a[3]; // Barycentric coordinates
-
-    Vec3 e1 = tri.v2 - tri.v1;
-    Vec3 e2 = tri.v3 - tri.v1;
-    Vec3 lhs = ray.origin - tri.v1;
-
-    Vec3 c1 = cross(e1, ray.direction);
-    Vec3 c2 = cross(e2, ray.direction);
-
-    a[1] = dot(lhs, c2) / dot(e1, c2);
-    a[2] = dot(lhs, c1) / dot(c1, e2);
-
-    a[0] = 1 - a[1] - a[2];
-
-    if (!(a[0] > 0 && a[1] > 0 && a[2] > 0))
-        return false;
-    Vec3 intersection_point = tri.v1 * a[0] + tri.v2 * a[1] + tri.v3 * a[2];
-
-    // Assuming normalized direction
-    float lambda = dot(intersection_point - ray.origin, ray.direction);
-
-    return lambda > 0;
-}
