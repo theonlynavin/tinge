@@ -10,7 +10,7 @@ struct Ray {
         : origin(origin), direction(normalize(direction)) {
     } // Parameterized constructor
     // Direction must be normalized while taking in
-    Vec3 at(float t) {
+    Vec3 at(float t) const{
         return origin + direction * t;
     } // Should return origin + t*direction;
 };
