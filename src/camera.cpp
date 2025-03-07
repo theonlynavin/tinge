@@ -4,8 +4,8 @@ Ray :: Ray(Vec3 origin , Vec3 direction) : origin(origin), direction(normalize(d
 // Direction must be normalized while taking in
 Ray :: ~Ray() {}
 
-Vec3 at(const Ray ray , float t){
-    return ray.origin + ray.direction * t;
+Vec3 Ray::at(float t) {
+    return origin + direction * t;
 } // Should return origin + t*direction;
 
 Camera :: Camera(float vertical_fov , int film_width , int film_height , float focal_length)
