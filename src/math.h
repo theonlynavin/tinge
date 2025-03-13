@@ -6,39 +6,70 @@
 #define TINGE_INFINITY 1e+8f
 #include <cmath>
 
+// TODO: Complete docs
+
 static inline bool is_zero(float f) {
     return f < TINGE_EPSILON && f > -TINGE_EPSILON;
 }
 
-// A three dimensional vector
+/***********************************
+ * A three dimensional vector class
+ ***********************************/
 struct Vec3 {
     float x, y, z;
 
+    /***********************************
+     * @brief Vec3 constructor
+     * @param x the vector's x coordinate
+     * @param y the vector's y coordinate
+     * @param z the vector's z coordinate
+     ***********************************/
     Vec3(float x = 0, float y = 0, float z = 0) : x(x), y(y), z(z) {}
 
-    // Returns the L-2 norm of the vector
+    /***********************************
+     * @brief Length of 3D vector
+     * @return The length of the vector
+     ***********************************/
     inline float length() const { return std::sqrt(x * x + y * y + z * z); }
 
-    // Returns a normalized version of the vector
+    /***********************************
+     * @brief Gives a normalized copy of the vector
+     * @return Normalized vector
+     ***********************************/
     inline Vec3 normalized() const {
         float len = length();
         return (len > 0) ? Vec3(x / len, y / len, z / len) : Vec3();
     }
 };
 
-// A four dimensional vector
+/**********************************
+ * A four dimensional vector class
+ **********************************/
 struct Vec4 {
     float x, y, z, w;
 
+    /***********************************
+     * @brief Vec4 constructor
+     * @param x the vector's x coordinate
+     * @param y the vector's y coordinate
+     * @param z the vector's z coordinate
+     * @param w the vector's w coordinate
+     ***********************************/
     Vec4(float x = 0, float y = 0, float z = 0, float w = 0)
         : x(x), y(y), z(z), w(w) {}
 
-    // Returns the L-2 norm of the vector
+    /***********************************
+     * @brief Length of 4D vector
+     * @return The length of the vector
+     ***********************************/
     inline float length() const {
         return std::sqrt(x * x + y * y + z * z + w * w);
     }
 
-    // Returns a normalized version of the vector
+    /***********************************
+     * @brief Gives a normalized copy of the vector
+     * @return Normalized vector
+     ***********************************/
     inline Vec4 normalized() const {
         float len = length();
         return (len > 0) ? Vec4(x / len, y / len, z / len, w / len) : Vec4();
@@ -115,9 +146,18 @@ inline static Vec4 normalize(Vec4 &v) {
     return v.normalized();
 }
 
+/*******************
+ * 3x3 Matrix class
+ ******************/
 struct Mat3 {
+    /***************************
+     * Values of matrix elements
+     ***************************/
     float m[3][3]{};
 
+    /**************************************************************
+     * @brief Mat3 constructor gives 3x3 identity matrix by default
+     **************************************************************/
     Mat3() : m{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}} {}
 
     inline float *operator[](int i) { return m[i]; }
@@ -161,9 +201,18 @@ struct Mat3 {
     }
 };
 
+/*******************
+ * 4x4 Matrix class
+ ******************/
 struct Mat4 {
+    /***************************
+     * Values of matrix elements
+     ****************************/
     float m[4][4]{};
 
+    /**************************************************************
+     * @brief Mat3 constructor gives 4x4 identity matrix by default
+     **************************************************************/
     Mat4() : m{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}} {}
 
     inline float *operator[](int i) { return m[i]; }
