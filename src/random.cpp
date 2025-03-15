@@ -1,0 +1,45 @@
+#include "random.h"
+#include "math.h"
+#include <cmath>
+
+Random::Random(unsigned int seed) : seed(seed), generator(seed) {}
+
+double Random::GenerateUniformFloat() {
+    std::uniform_real_distribution<float> distribution(0.0, 1.0);
+    return distribution(this->generator);
+}
+
+std::pair<double, double> Random::GenerateUniformPointDisc() {
+    std::uniform_real_distribution<float> distribution(0.0, 1.0);
+    double r = std::sqrt(distribution(generator));
+    double theta = distribution(generator) * 2 * M_PI;
+
+    double x = r * std::cos(theta);
+    double y = r * std::sin(theta);
+    return {x, y};
+}
+
+Vec3 Random::GenerateUniformPointSphere() {
+    std::uniform_real_distribution<float> distribution(0.0, 1.0);
+    float u = distribution(generator);
+    float v = distribution(generator);
+
+    float theta = u * 2 * M_PI;
+    float cos_phi = 2 * v - 1;
+    Vec3 ret;
+
+    float sin_theta = sin(theta);
+
+    ret.x = std::cos(theta);
+    ret.y = sin_theta * cos_phi;
+    ret.z = sin_theta * std::sqrt(1 - cos_phi * cos_phi);
+    return ret;
+}
+
+// Generate a random point on a hemisphere around a normal vector
+Vec3 Random::GenerateUniformPointHemisphere(const Vec3 &n) {
+    Vec3 ret = GenerateUniformPointSphere();
+    float factor = dot(ret, n) > 0 ? 1 : -1;
+
+    return ret * factor;
+}
