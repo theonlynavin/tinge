@@ -19,6 +19,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${PLATFORM_NAME})
 set(SOURCES
     src/main.cpp
     src/util.cpp
+    src/random.cpp
     src/objects.cpp
     src/camera.cpp
     src/frame.cpp
