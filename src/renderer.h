@@ -15,9 +15,14 @@ struct Renderer {
      * @param outfile Filename for output file (.png)
      * @param out_width Width of output file in pixels
      * @param out_height Height of output file in pixels
+     * @param env_light Use environment light if true and environment map if
+     *false
      **********************/
     static void render(Camera camera,
                        const std::vector<AbstractShape *> &shapes,
                        const std::string &outfile, int out_width,
-                       int out_height);
+                       int out_height, bool env_light);
+
+    static void env_light();
+    static void env_map();
 };

@@ -4,13 +4,19 @@
 #include <stb_image/stb_image_write.h>
 
 void Renderer::render(Camera camera, const std::vector<AbstractShape *> &shapes,
-                      const std::string &outfile, int out_width,
-                      int out_height) {
+                      const std::string &outfile, int out_width, int out_height,
+                      bool env_light) {
 
     unsigned char *data = new unsigned char[out_width * out_height * 3];
 
     Vec3 sky_blue = Vec3(0.1f, 0.5f, 0.9f);
     Vec3 sky_white = Vec3(1, 1, 1);
+
+    if (env_light) {
+        Renderer::env_light();
+    } else {
+        Renderer::env_map();
+    }
 
     for (int i = 0; i < out_width; i++) {
         for (int j = 0; j < out_height; j++) {
@@ -42,6 +48,14 @@ void Renderer::render(Camera camera, const std::vector<AbstractShape *> &shapes,
         }
     }
 
-    stbi_write_png(".//test.png", 1920, 1080, 3, data, 0);
+    stbi_write_png(outfile.data(), out_width, out_height, 3, data, 0);
     delete[] data;
+}
+
+void Renderer::env_light() {
+    // TODO: Implement
+}
+
+void Renderer::env_map() {
+    // TODO: Implement
 }

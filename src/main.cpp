@@ -24,7 +24,7 @@ int main() {
     std::vector<AbstractShape *> shapes =
         std::vector<AbstractShape *>{&sphere1, &sphere2};
 
-    Renderer().render(camera, shapes, "test.png", WIDTH, HEIGHT);
+    Renderer::render(camera, shapes, "test.png", WIDTH, HEIGHT);
 
     // Example matrix code
 
