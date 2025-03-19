@@ -15,6 +15,9 @@ int main() {
     sphere2.frame.scale.y = 2;
     sphere2.frame.lockFrame();
 
+    MaterialDiffuse diffuse;
+    sphere2.material = &diffuse;
+
     Sphere sphere1 = Sphere(Vec3(0, 2, -5), 1);
     sphere1.frame.scale.x = 2;
     sphere1.frame.origin.x = 1;
