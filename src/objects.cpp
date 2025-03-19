@@ -19,6 +19,8 @@ IntersectionOut AbstractShape::intersect(const Ray &ray) {
     intsec_out.normal = transpose(frame.worldToFrame) & intsec_out.normal;
     intsec_out.normal = normalize(intsec_out.normal);
     intsec_out.point = frame.frameToWorld * intsec_out.point;
+    intsec_out.material = this->material;
+
     return intsec_out;
 }
 
