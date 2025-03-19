@@ -13,6 +13,7 @@ struct IntersectionOut {
     Vec3 normal; /**< Normal vector at point of intersection */
     float t;     /**< Distance traversed by light ray */
     Vec3 point;  /**< Point of intersection of the light ray*/
+    AbstractMaterial* material; 
 
     IntersectionOut();
 };
@@ -22,7 +23,7 @@ struct IntersectionOut {
  ********************************************/
 struct AbstractShape {
     Frame frame; /**< Frame of the object*/
-
+    AbstractMaterial* material; 
     /***************************************************
      * @brief Common intersection routine for all shapes
      * @param ray Light ray to check in world space
