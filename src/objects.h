@@ -1,10 +1,13 @@
 #pragma once
 #include "camera.h"
 #include "frame.h"
+#include "material.h"
 #include "math.h"
+#include <memory>
 #include <utility>
 #include <vector>
 
+using mat_pointer = std::shared_ptr<AbstractMaterial>;
 /**************************************************************
  * Encapsulation class for output of intersection routine
  ***************************************************************/
@@ -13,6 +16,8 @@ struct IntersectionOut {
     Vec3 normal; /**< Normal vector at point of intersection */
     float t;     /**< Distance traversed by light ray */
     Vec3 point;  /**< Point of intersection of the light ray*/
+    Ray w0;
+    mat_pointer hit_mat;
 
     IntersectionOut();
 };
@@ -22,6 +27,7 @@ struct IntersectionOut {
  ********************************************/
 struct AbstractShape {
     Frame frame; /**< Frame of the object*/
+    mat_pointer material;
 
     /***************************************************
      * @brief Common intersection routine for all shapes
@@ -53,7 +59,7 @@ struct Triangle : AbstractShape {
      * @param v2 2nd vertex of the triangle
      * @param v3 3rd vertex of the triangle
      ******************************************/
-    Triangle(Vec3 v1, Vec3 v2, Vec3 v3);
+    Triangle(Vec3 v1, Vec3 v2, Vec3 v3, mat_pointer mat);
     ~Triangle();
 
   protected:
@@ -70,7 +76,8 @@ struct Sphere : AbstractShape {
      * @param centre Centre of the sphere
      * @param radius Radius of the sphere
      ***********************************************/
-    Sphere(Vec3 centre, float radius); // Parametrized triangle constructor
+    Sphere(Vec3 centre, float radius,
+           mat_pointer mat); // Parametrized Sphere constructor
     ~Sphere();
 
   protected:
@@ -87,7 +94,8 @@ struct Plane : AbstractShape {
      * @param normal Normal of the sphere
      * @param point A point on the plane of the sphere
      ***********************************************************/
-    Plane(Vec3 normal, Vec3 point); // Parametrized triangle constructor
+    Plane(Vec3 normal, Vec3 point,
+          mat_pointer mat); // Parametrized triangle constructor
     ~Plane();
 
   protected:

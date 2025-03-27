@@ -6,6 +6,7 @@ struct Ray {
     Vec3 origin;
     Vec3 direction;
 
+    Ray();
     Ray(Vec3 origin, Vec3 direction); // Parameterized constructor
     // Direction must be normalized while taking in
 

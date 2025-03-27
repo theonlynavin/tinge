@@ -26,13 +26,13 @@ Vec3 Random::GenerateUniformPointSphere() {
 
     float theta = u * 2 * M_PI;
     float cos_phi = 2 * v - 1;
+    float sin_phi = std::sqrt(1 - cos_phi * cos_phi);
+
     Vec3 ret;
 
-    float sin_theta = sin(theta);
-
-    ret.x = std::cos(theta);
-    ret.y = sin_theta * cos_phi;
-    ret.z = sin_theta * std::sqrt(1 - cos_phi * cos_phi);
+    ret.x = cos_phi;
+    ret.y = std::sin(theta) * sin_phi;
+    ret.z = std::cos(theta) * sin_phi;
     return ret;
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "camera.h"
+#include "material.h"
 #include "objects.h"
 #include <vector>
 
@@ -25,4 +26,7 @@ struct Renderer {
 
     static void env_light();
     static void env_map();
+    static Vec3 illuminance(const IntersectionOut &surface, int max_depth,
+                            const std::vector<AbstractShape *> &shapes,
+                            Random &radom_generator);
 };
