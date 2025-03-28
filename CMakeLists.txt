@@ -14,7 +14,6 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${PLATFORM_NAME}) 
-set(CMAKE_CXX_FLAGS "-Ofast")
 
 # Configure sources
 set(SOURCES
@@ -25,6 +24,7 @@ set(SOURCES
     src/camera.cpp
     src/frame.cpp
     src/renderer.cpp
+    src/scene_generator.cpp
 )
 
 # Build tinge :)

@@ -16,8 +16,8 @@ class MaterialDiffuse : public AbstractMaterial {
   public:
     MaterialDiffuse(const Vec3 &color) { this->color = color; }
     Vec3 Fr(const Ray &wi, const Ray &wo, Vec3 n) const override {
-        /*Vec3 return_col = color * dot(wi.direction, n);*/
-        return color; // light observed because of reflection
+        Vec3 return_col = color * dot(wi.direction, n);
+        return return_col; // light observed because of reflection
     }
     // as, most of the reflective surfaces do not emit light
     Vec3 Le(const Ray &wi, Vec3 x) const override { return Vec3(0, 0, 0); }
@@ -48,14 +48,17 @@ class MaterialMetallic : public AbstractMaterial {
         : p(roughness_constant) {
         this->color = color;
     }
-    // light observed because of emission
     Vec3 Le(const Ray &wi, Vec3 x) const override { return Vec3(0, 0, 0); }
-    // as, most of the emissive surfaces do not reflect
     Vec3 Fr(const Ray &wi, const Ray &wo, Vec3 n) const override {
         return color;
     }
+    // Diffuse with probability p
     Vec3 sample_wi(const Ray &w_o, const Vec3 &n, Random &random_gen) override {
-        return random_gen.GenerateUniformPointHemisphere(n);
-        /*return (w_o.direction + n * 2 * dot(n, w_o.direction)).normalized();*/
+        if (random_gen.GenerateUniformFloat() < p)
+            return random_gen.GenerateUniformPointHemisphere(n);
+        else
+            return (w_o.direction - n * 2 * dot(n, w_o.direction));
     }
 };
+
+using mat_pointer = std::shared_ptr<AbstractMaterial>;

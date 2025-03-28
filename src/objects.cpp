@@ -128,11 +128,11 @@ bool Plane::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
 }
 Vec3 Plane::_get_normal(const Vec3 &point) { return this->n; }
 
-std::pair<AbstractShape *, IntersectionOut>
-closestIntersect(const std::vector<AbstractShape *> &v, const Ray &ray) {
+std::pair<obj_pointer, IntersectionOut>
+closestIntersect(const std::vector<obj_pointer> &v, const Ray &ray) {
     IntersectionOut min_hit;
     min_hit.t = TINGE_INFINITY;
-    AbstractShape *min_shape = NULL;
+    obj_pointer min_shape = NULL;
     for (int i = 0; i < v.size(); i++) {
         IntersectionOut ans = v[i]->intersect(ray);
         if (ans.hit) {
@@ -143,5 +143,5 @@ closestIntersect(const std::vector<AbstractShape *> &v, const Ray &ray) {
         }
     }
 
-    return std::pair<AbstractShape *, IntersectionOut>(min_shape, min_hit);
+    return std::pair<obj_pointer, IntersectionOut>(min_shape, min_hit);
 }

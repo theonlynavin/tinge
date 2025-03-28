@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-using mat_pointer = std::shared_ptr<AbstractMaterial>;
 /**************************************************************
  * Encapsulation class for output of intersection routine
  ***************************************************************/
@@ -48,6 +47,8 @@ struct AbstractShape {
     // Point in World space
     virtual Vec3 _get_normal(const Vec3 &point) = 0;
 };
+
+using obj_pointer = std::shared_ptr<AbstractShape>;
 
 struct Triangle : AbstractShape {
     Vec3 v1, v2, v3; /**< Position vectors of triangle vertices*/
@@ -108,5 +109,5 @@ struct Plane : AbstractShape {
  * @param v Vector of the objects to check
  * @param ray Ray to check with
  ******************************************************/
-std::pair<AbstractShape *, IntersectionOut>
-closestIntersect(const std::vector<AbstractShape *> &v, const Ray &ray);
+std::pair<obj_pointer, IntersectionOut>
+closestIntersect(const std::vector<obj_pointer> &v, const Ray &ray);
