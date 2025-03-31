@@ -24,6 +24,7 @@ set(SOURCES
     src/camera.cpp
     src/frame.cpp
     src/renderer.cpp
+    src/scene_generator.cpp
 )
 
 # Build tinge :)

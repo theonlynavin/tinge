@@ -1,6 +1,8 @@
 #include "camera.h"
 #include "math.h"
 
+Ray ::Ray() {} // Parameterized constructor
+
 Ray ::Ray(Vec3 origin, Vec3 direction)
     : origin(origin), direction(normalize(direction)) {
 } // Parameterized constructor
@@ -30,6 +32,7 @@ Ray Camera ::generate_ray(float u, float v) {
     Vec3 origin(0, 0, 0); // All rays start from the pin-hole(assumed at origin)
     Vec3 direction(x_coord, y_coord, -focal_length);
     // Position vector for the given NDC{assumed range [0,1]}
-    
-    return Ray(frame.frameToWorld * origin, (frame.frameToWorld&direction).normalized());
+
+    return Ray(frame.frameToWorld * origin,
+               (frame.frameToWorld & direction).normalized());
 }
