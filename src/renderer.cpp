@@ -8,7 +8,7 @@
 #include <ostream>
 #include <thread>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#define SCENE_VIEW 0
+#define SCENE_VIEW 1
 #include <stb_image/stb_image_write.h>
 
 void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
@@ -26,7 +26,7 @@ void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
             v = 1 - (float)j / out_height;
             int pix = out_width * j + i;
 
-            const Ray ray = camera.generate_ray(u, v);
+            const Ray ray = camera.generate_ray(u, v, random_generator);
             auto hit = closestIntersect(shapes, ray);
 
             IntersectionOut &details = hit.second;
