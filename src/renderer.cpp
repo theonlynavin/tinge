@@ -8,6 +8,7 @@
 #include <ostream>
 #include <thread>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#define SCENE_VIEW 0
 #include <stb_image/stb_image_write.h>
 
 void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
@@ -30,14 +31,20 @@ void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
 
             IntersectionOut &details = hit.second;
             Vec3 color(0, 0, 0);
-
             if (details.hit == true) {
-                for (int sample = 0; sample < num_samples; sample++) {
-                    color =
-                        color + Renderer::illuminance(details, depth, shapes,
-                                                      random_generator);
+
+                if (!SCENE_VIEW) {
+                    for (int sample = 0; sample < num_samples; sample++) {
+                        color = color + Renderer::illuminance(details, depth,
+                                                              shapes,
+                                                              random_generator);
+                    }
+                    color = color / num_samples;
+                } else {
+                    color.x = (0.6 + 0.4 * dot(details.normal, ray.direction));
+                    color.y = (0.6 + 0.4 * dot(details.normal, ray.direction));
+                    color.z = (0.6 + 0.4 * dot(details.normal, ray.direction));
                 }
-                color = color / num_samples;
             } else {
                 /*color = mix(sky_white, sky_blue, v);*/
                 color = Vec3(0, 0, 0);
