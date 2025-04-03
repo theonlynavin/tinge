@@ -1,7 +1,11 @@
 #include "scene_generator.h"
+#include "frame.h"
 #include "material.h"
 #include "math.h"
+#include "obj_loader/OBJ_Loader.h"
 #include "objects.h"
+#include "util.h"
+#include <iostream>
 #include <memory>
 
 void generate_scene(std::vector<obj_pointer> &shapes) {
@@ -82,12 +86,31 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     shapes.push_back(bottom_wall_1);
     shapes.push_back(bottom_wall_2);
 
-    mat_pointer metal_ball =
+    mat_pointer metal =
         std::make_shared<MaterialMetallic>(Vec3(.6, .6, .6), .4);
-    obj_pointer ball =
-        std::make_shared<Sphere>(Vec3(0, 1.2, 0), 1.2, metal_ball);
-    ball->frame.origin.z = -3;
-    ball->frame.origin.y = -2;
-    ball->frame.lockFrame();
-    shapes.push_back(ball);
+
+    // Initialize Loader
+    objl::Loader Loader;
+    bool loadout = Loader.LoadFile("teapot.obj");
+    objl::Mesh mesh = Loader.LoadedMeshes[0];
+
+    auto common_mesh_transform = [](Frame &obj_frame) {
+        obj_frame.origin.z = -1;
+        obj_frame.origin.y = -5;
+        obj_frame.scale.x = 1. / 30;
+        obj_frame.scale.y = 1. / 30;
+        obj_frame.scale.z = 1. / 30;
+        obj_frame.lockFrame();
+    };
+
+    for (int i = 0; i < mesh.Indices.size(); i += 3) {
+        auto &v1 = mesh.Vertices[mesh.Indices[i]].Position;
+        auto &v2 = mesh.Vertices[mesh.Indices[i + 1]].Position;
+        auto &v3 = mesh.Vertices[mesh.Indices[i + 2]].Position;
+        obj_pointer triangle = std::make_shared<Triangle>(
+            Vec3(v1.X, v1.Y, v1.Z), Vec3(v2.X, v2.Y, v2.Z),
+            Vec3(v3.X, v3.Y, v3.Z), metal);
+        common_mesh_transform(triangle->frame);
+        shapes.push_back(triangle);
+    }
 }

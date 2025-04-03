@@ -73,7 +73,7 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
     // Create 10 threads to run concurrently
     std::vector<std::thread> threads;
     threads.reserve(10);
-    int num_samples = 5, depth = 4;
+    int num_samples = 1, depth = 1;
 
     // Each thread renders 1/10th width of scene
     for (int i = 0; i < 10; i++) {
