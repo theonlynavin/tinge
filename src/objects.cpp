@@ -68,7 +68,7 @@ bool Triangle::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
 
     // Assuming normalized direction
     float lambda = dot(intersection_point - ray.origin, ray.direction);
-    intersect_out.normal = this->n * (dot(this->n, ray.direction) > 0 ? -1 : 1);
+    intersect_out.normal = this->n;
     intersect_out.t = lambda;
     intersect_out.point = intersection_point;
     return lambda > 0;
@@ -121,7 +121,7 @@ bool Plane::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
     if (t < 0)
         return false;
     intersect_out.t = t;
-    intersect_out.normal = this->n * (dot(this->n, ray.direction) > 0 ? -1 : 1);
+    intersect_out.normal = this->n;
 
     intersect_out.point = ray.at(t);
     return true;
