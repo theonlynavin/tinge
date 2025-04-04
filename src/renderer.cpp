@@ -121,7 +121,7 @@ Vec3 Renderer::illuminance(const IntersectionOut &surface, int max_depth,
     // TODO: Implement BRDF
     Vec3 dir = surface.hit_mat->sample_wi(surface.w0, surface.normal,
                                           random_generator);
-    Ray wi = Ray(surface.point, dir);
+    Ray wi = Ray(surface.point + surface.normal * 0.001, dir);
     auto hit = closestIntersect(shapes, wi);
     IntersectionOut &details = hit.second;
     Vec3 Lr = Vec3(0, 0, 0);
