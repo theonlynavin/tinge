@@ -31,6 +31,8 @@ struct Camera {
     Ray generate_ray(float u, float v, Random &random_gen);
     // Given NDC coordinates (u, v), should generate the corresponding ray
 
+    void look_at(Vec3 from, Vec3 to);
+
     Frame frame;
     // Matrix containing transformation from world space to camera space
 };
