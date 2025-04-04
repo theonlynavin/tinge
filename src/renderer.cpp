@@ -8,8 +8,11 @@
 #include <ostream>
 #include <thread>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#define SCENE_VIEW 1
+#define SCENE_VIEW 0
 #include <stb_image/stb_image_write.h>
+
+std::mutex counter_mutex;
+int counter = 0;
 
 void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
                    unsigned char *data, int w1, int w2, int out_width,
@@ -21,6 +24,17 @@ void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
 
     for (int i = w1; i < w2; i++) {
         u = (float)i / out_width;
+
+        counter_mutex.lock();
+        if ((w2 - i) % (out_width / 100) == 0) {
+            counter++;
+
+            if (counter % 10 == 0) {
+                std::cout << "==";
+                std::flush(std::cout);
+            }
+        }
+        counter_mutex.unlock();
 
         for (int j = 0; j < out_height; j++) {
             v = 1 - (float)j / out_height;
@@ -56,8 +70,6 @@ void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
             data[pix * 3 + 2] = (unsigned char)(255 * color.z);
         }
     }
-    std::cout << "==";
-    std::flush(std::cout);
 }
 
 void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
@@ -80,7 +92,7 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
     // Create 10 threads to run concurrently
     std::vector<std::thread> threads;
     threads.reserve(10);
-    int num_samples = 5, depth = 4;
+    int num_samples = 4, depth = 4;
 
     // Each thread renders 1/10th width of scene
     for (int i = 0; i < 10; i++) {
