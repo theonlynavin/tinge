@@ -53,8 +53,8 @@ Ray Camera ::generate_ray(float u, float v, Random &random_gen) {
 void Camera::look_at(Vec3 from, Vec3 to) {
     Vec3 direction = to - from;
     focal_length = direction.length();
-    Vec3 A = direction / direction.length();
-    Vec3 B = Vec3(0, 0, -1);
+    Vec3 A = Vec3(0, 0, -1);
+    Vec3 B = direction / direction.length();
     frame.origin = from;
 
     Vec3 axis = cross(A, B).normalized();
@@ -62,6 +62,7 @@ void Camera::look_at(Vec3 from, Vec3 to) {
     float angle = std::acos(dp);
 
     Mat3 K;
+    Mat3 I;
     K.m[0][0] = 0;
     K.m[0][1] = -axis.z;
     K.m[0][2] = axis.y;
@@ -72,17 +73,13 @@ void Camera::look_at(Vec3 from, Vec3 to) {
     K.m[2][1] = axis.x;
     K.m[2][2] = 0;
 
-    K = K + K * std::sin(angle) + K * K * (1 - dp);
-    float roll = std::asin(K.m[2][0]);
-    float pitch = std::atan2(K.m[2][2], K.m[2][1]);
-    float yaw = std::atan2(K.m[1][0], K.m[0][0]);
+    K = I - K * std::sin(angle) + K * K * (1 - dp);
+    float pitch = -std::asin(K.m[2][0]);
+    float yaw = std::atan2(K.m[1][0], K.m[1][1]);
+    float roll = std::atan2(K.m[2][1], K.m[2][2]);
 
-    std::cout << roll << std::endl;
-    std::cout << pitch << std::endl;
-    std::cout << yaw << std::endl;
-
-    frame.rotation.x = pitch;
-    frame.rotation.y = roll;
+    frame.rotation.x = roll;
+    frame.rotation.y = pitch;
     frame.rotation.z = yaw;
     frame.lockFrame();
 }
