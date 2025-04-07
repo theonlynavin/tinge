@@ -11,8 +11,7 @@
 
 int main() {
     std::cout << "Hello there!" << std::endl;
-    Camera camera = Camera(2.5, WIDTH, HEIGHT, 3, 0.01);
-    camera.look_at(Vec3(0, 0.2, -1), Vec3(0, 0, -3));
+    Camera camera = Camera(2.5, WIDTH, HEIGHT, 3, 0);
     std::vector<obj_pointer> shapes;
     // Populate scene
     generate_scene(shapes);

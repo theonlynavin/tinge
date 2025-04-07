@@ -47,17 +47,20 @@ void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
             Vec3 color(0, 0, 0);
             if (details.hit == true) {
 
-                if (!SCENE_VIEW) {
+                if (SCENE_VIEW == 0) {
                     for (int sample = 0; sample < num_samples; sample++) {
                         color = color + Renderer::illuminance(details, depth,
                                                               shapes,
                                                               random_generator);
                     }
                     color = color / num_samples;
-                } else {
+                } else if (SCENE_VIEW == 1) {
                     color.x = (0.6 + 0.4 * dot(details.normal, ray.direction));
                     color.y = (0.6 + 0.4 * dot(details.normal, ray.direction));
                     color.z = (0.6 + 0.4 * dot(details.normal, ray.direction));
+                } else {
+
+                    color = details.hit_mat->color;
                 }
             } else {
                 /*color = mix(sky_white, sky_blue, v);*/
@@ -92,7 +95,7 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
     // Create 10 threads to run concurrently
     std::vector<std::thread> threads;
     threads.reserve(10);
-    int num_samples = 4, depth = 4;
+    int num_samples = 2, depth = 5;
 
     // Each thread renders 1/10th width of scene
     for (int i = 0; i < 10; i++) {
@@ -131,21 +134,26 @@ Vec3 Renderer::illuminance(const IntersectionOut &surface, int max_depth,
 
     // Else pick random vector according to material
     // TODO: Implement BRDF
+    bool subsurface = false;
     Vec3 dir = surface.hit_mat->sample_wi(surface.w0, surface.normal,
                                           random_generator);
-    Ray wi = Ray(surface.point + surface.normal * 0.001, dir);
+    if (dir == Vec3(0, 0, 0))
+        return Le;
+    Ray wi = Ray(surface.point + dir * 0.01, dir);
+
     auto hit = closestIntersect(shapes, wi);
     IntersectionOut &details = hit.second;
     Vec3 Lr = Vec3(0, 0, 0);
 
     // Calculate luminance of hit point else assume no light
-    if (details.hit)
+    if (details.hit) {
         Lr = illuminance(details, max_depth - 1, shapes, random_generator);
+    }
     Vec3 Fr = surface.hit_mat->Fr(wi, surface.w0, surface.normal);
 
     // Component-wise vector multiplication
     Vec3 Li = Vec3(Fr.x * Lr.x, Fr.y * Lr.y, Fr.z * Lr.z) *
-              dot(wi.direction, surface.normal);
+              abs(dot(wi.direction, surface.normal));
 
     // Return monte-carlo sample
     return Le + Li * V;

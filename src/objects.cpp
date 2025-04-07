@@ -1,6 +1,7 @@
 #include "objects.h"
 #include "material.h"
 #include "math.h"
+#include <iostream>
 #include <memory>
 
 IntersectionOut::IntersectionOut()
@@ -23,7 +24,7 @@ IntersectionOut AbstractShape::intersect(const Ray &ray) {
     intsec_out.point = frame.frameToWorld * intsec_out.point;
     intsec_out.hit_mat = material;
     intsec_out.w0 = ray;
-    intsec_out.w0.direction = normalize(intsec_out.w0.direction);
+
     return intsec_out;
 }
 
@@ -86,17 +87,19 @@ bool Sphere::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
     Vec3 L = this->c - ray.origin;
     float tca = dot(L, ray.direction);
 
-    if (tca < 0)
-        return false;
-
     float d2 = dot(L, L) - tca * tca;
 
     if (d2 < 0 || r * r < d2)
         return false;
 
     float t0 = tca - sqrt(r * r - d2);
+    if (t0 < 0) {
+        t0 = 2 * tca - t0;
+        if (t0 < 0)
+            return false;
+    }
     intersect_out.point = ray.at(t0);
-    intersect_out.normal = intersect_out.point - c;
+    intersect_out.normal = (intersect_out.point - c).normalized();
     intersect_out.t = t0;
 
     return true;

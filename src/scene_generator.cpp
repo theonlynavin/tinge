@@ -83,7 +83,7 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     shapes.push_back(bottom_wall_2);
 
     mat_pointer metal_ball =
-        std::make_shared<MaterialMetallic>(Vec3(.6, .6, .6), .4);
+        std::make_shared<MaterialTransmission>(Vec3(.1, .6, .1), 1.2);
     obj_pointer ball =
         std::make_shared<Sphere>(Vec3(0, 1.2, 0), 1.2, metal_ball);
     ball->frame.origin.z = -3;
