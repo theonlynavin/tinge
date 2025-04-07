@@ -12,7 +12,7 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
 
     mat_pointer emmisive = std::make_shared<MaterialEmissive>(Vec3(1, 1, 1));
     obj_pointer back_wall_1 = std::make_shared<Triangle>(
-        Vec3(-7, -2, 0), Vec3(-7, 2, 0), Vec3(3.5, 2, 0), emmisive);
+        Vec3(-7, 2, 0), Vec3(-7, -2, 0), Vec3(3.5, 2, 0), emmisive);
     obj_pointer back_wall_2 = std::make_shared<Triangle>(
         Vec3(-7, -2, 0), Vec3(7, -2, 0), Vec3(3.5, 2, 0), emmisive);
     back_wall_1->frame.origin.z = -7;
@@ -25,7 +25,7 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     mat_pointer right_wall_mat =
         std::make_shared<MaterialDiffuse>(Vec3(.9, .1, .1));
     obj_pointer right_wall_1 = std::make_shared<Triangle>(
-        Vec3(0, 0, 0), Vec3(0, 0, -7), Vec3(0, 4, -7), right_wall_mat);
+        Vec3(0, 0, 0), Vec3(0, 4, -7), Vec3(0, 0, -7), right_wall_mat);
     obj_pointer right_wall_2 = std::make_shared<Triangle>(
         Vec3(0, 0, 0), Vec3(0, 4, 0), Vec3(0, 4, -7), right_wall_mat);
     right_wall_1->frame.origin.x = 3.5;
@@ -42,7 +42,7 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     obj_pointer left_wall_1 = std::make_shared<Triangle>(
         Vec3(0, 0, 0), Vec3(0, 0, -7), Vec3(0, 4, -7), left_wall_mat);
     obj_pointer left_wall_2 = std::make_shared<Triangle>(
-        Vec3(0, 0, 0), Vec3(0, 4, 0), Vec3(0, 4, -7), left_wall_mat);
+        Vec3(0, 0, 0), Vec3(0, 4, -7), Vec3(0, 4, 0), left_wall_mat);
     left_wall_1->frame.origin.x = -3.5;
     left_wall_1->frame.origin.y = -2;
     left_wall_1->frame.lockFrame();
@@ -57,7 +57,7 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     obj_pointer top_wall_1 = std::make_shared<Triangle>(
         Vec3(0, 0, 0), Vec3(7, 0, 0), Vec3(7, 0, 7), top_wall_mat);
     obj_pointer top_wall_2 = std::make_shared<Triangle>(
-        Vec3(0, 0, 0), Vec3(0, 0, 7), Vec3(7, 0, 7), top_wall_mat);
+        Vec3(0, 0, 0), Vec3(7, 0, 7), Vec3(0, 0, 7), top_wall_mat);
     top_wall_1->frame.origin.x = -3.5;
     top_wall_1->frame.origin.y = 2;
     top_wall_1->frame.origin.z = -7;
@@ -72,7 +72,7 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     mat_pointer bottom_wall_mat =
         std::make_shared<MaterialDiffuse>(Vec3(.1, .1, .9));
     obj_pointer bottom_wall_1 = std::make_shared<Triangle>(
-        Vec3(0, 0, 0), Vec3(7, 0, 0), Vec3(7, 0, 7), bottom_wall_mat);
+        Vec3(0, 0, 0), Vec3(7, 0, 7), Vec3(7, 0, 0), bottom_wall_mat);
     obj_pointer bottom_wall_2 = std::make_shared<Triangle>(
         Vec3(0, 0, 0), Vec3(0, 0, 7), Vec3(7, 0, 7), bottom_wall_mat);
     bottom_wall_1->frame.origin.x = -3.5;
