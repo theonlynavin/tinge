@@ -12,9 +12,9 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
 
     mat_pointer emmisive = std::make_shared<MaterialEmissive>(Vec3(1, 1, 1));
     obj_pointer back_wall_1 = std::make_shared<Triangle>(
-        Vec3(-7, 2, 0), Vec3(-7, -2, 0), Vec3(3.5, 2, 0), emmisive);
+        Vec3(-3.5, 2, 0), Vec3(-3.5, -2, 0), Vec3(3.5, 2, 0), emmisive);
     obj_pointer back_wall_2 = std::make_shared<Triangle>(
-        Vec3(-7, -2, 0), Vec3(7, -2, 0), Vec3(3.5, 2, 0), emmisive);
+        Vec3(-3.5, -2, 0), Vec3(3.5, -2, 0), Vec3(3.5, 2, 0), emmisive);
     back_wall_1->frame.origin.z = -7;
     back_wall_1->frame.lockFrame();
     back_wall_2->frame.origin.z = -7;
@@ -34,8 +34,6 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     right_wall_2->frame.origin.x = 3.5;
     right_wall_2->frame.origin.y = -2;
     right_wall_2->frame.lockFrame();
-    shapes.push_back(right_wall_1);
-    shapes.push_back(right_wall_2);
 
     mat_pointer left_wall_mat =
         std::make_shared<MaterialDiffuse>(Vec3(.1, .9, .1));
@@ -49,8 +47,6 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     left_wall_2->frame.origin.x = -3.5;
     left_wall_2->frame.origin.y = -2;
     left_wall_2->frame.lockFrame();
-    shapes.push_back(left_wall_1);
-    shapes.push_back(left_wall_2);
 
     mat_pointer top_wall_mat =
         std::make_shared<MaterialDiffuse>(Vec3(1, .7, .1));
@@ -66,8 +62,6 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     top_wall_2->frame.origin.y = 2;
     top_wall_2->frame.origin.z = -7;
     top_wall_2->frame.lockFrame();
-    shapes.push_back(top_wall_1);
-    shapes.push_back(top_wall_2);
 
     mat_pointer bottom_wall_mat =
         std::make_shared<MaterialDiffuse>(Vec3(.1, .1, .9));
@@ -83,23 +77,30 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     bottom_wall_2->frame.origin.y = -2;
     bottom_wall_2->frame.origin.z = -7;
     bottom_wall_2->frame.lockFrame();
+
+    shapes.push_back(right_wall_1);
+    shapes.push_back(right_wall_2);
+    shapes.push_back(left_wall_1);
+    shapes.push_back(left_wall_2);
+    shapes.push_back(top_wall_1);
+    shapes.push_back(top_wall_2);
     shapes.push_back(bottom_wall_1);
     shapes.push_back(bottom_wall_2);
 
-    mat_pointer metal =
-        std::make_shared<MaterialMetallic>(Vec3(.6, .6, .6), .4);
+    mat_pointer metal = std::make_shared<MaterialMetallic>(Vec3(1, 1, 1), .1);
 
     // Initialize Loader
     objl::Loader Loader;
-    bool loadout = Loader.LoadFile("teapot.obj");
+    bool loadout = Loader.LoadFile("box.obj");
     objl::Mesh mesh = Loader.LoadedMeshes[0];
 
     auto common_mesh_transform = [](Frame &obj_frame) {
-        obj_frame.origin.z = -1;
-        obj_frame.origin.y = -5;
-        obj_frame.scale.x = 1. / 30;
-        obj_frame.scale.y = 1. / 30;
-        obj_frame.scale.z = 1. / 30;
+        obj_frame.origin.y = -20;
+        obj_frame.origin.z = -5;
+        /*obj_frame.rotation.y = 0.73;*/
+        obj_frame.scale.x = 8;
+        obj_frame.scale.y = 8;
+        obj_frame.scale.z = 8;
         obj_frame.lockFrame();
     };
 
