@@ -1,7 +1,9 @@
 #pragma once
 #include "camera.h"
 #include "frame.h"
+#include "material.h"
 #include "math.h"
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -13,8 +15,8 @@ struct IntersectionOut {
     Vec3 normal; /**< Normal vector at point of intersection */
     float t;     /**< Distance traversed by light ray */
     Vec3 point;  /**< Point of intersection of the light ray*/
-    AbstractMaterial* material; 
-
+    Ray w0;
+    mat_pointer hit_mat;
     IntersectionOut();
 };
 
@@ -23,7 +25,7 @@ struct IntersectionOut {
  ********************************************/
 struct AbstractShape {
     Frame frame; /**< Frame of the object*/
-    AbstractMaterial* material; 
+    mat_pointer material;
     /***************************************************
      * @brief Common intersection routine for all shapes
      * @param ray Light ray to check in world space
@@ -44,6 +46,8 @@ struct AbstractShape {
     virtual Vec3 _get_normal(const Vec3 &point) = 0;
 };
 
+using obj_pointer = std::shared_ptr<AbstractShape>;
+
 struct Triangle : AbstractShape {
     Vec3 v1, v2, v3; /**< Position vectors of triangle vertices*/
     Vec3 n;          /**< Normal vector of triangle*/
@@ -54,7 +58,7 @@ struct Triangle : AbstractShape {
      * @param v2 2nd vertex of the triangle
      * @param v3 3rd vertex of the triangle
      ******************************************/
-    Triangle(Vec3 v1, Vec3 v2, Vec3 v3);
+    Triangle(Vec3 v1, Vec3 v2, Vec3 v3, mat_pointer mat);
     ~Triangle();
 
   protected:
@@ -71,7 +75,8 @@ struct Sphere : AbstractShape {
      * @param centre Centre of the sphere
      * @param radius Radius of the sphere
      ***********************************************/
-    Sphere(Vec3 centre, float radius); // Parametrized triangle constructor
+    Sphere(Vec3 centre, float radius,
+           mat_pointer mat); // Parametrized Sphere constructor
     ~Sphere();
 
   protected:
@@ -88,7 +93,8 @@ struct Plane : AbstractShape {
      * @param normal Normal of the sphere
      * @param point A point on the plane of the sphere
      ***********************************************************/
-    Plane(Vec3 normal, Vec3 point); // Parametrized triangle constructor
+    Plane(Vec3 normal, Vec3 point,
+          mat_pointer mat); // Parametrized triangle constructor
     ~Plane();
 
   protected:
@@ -101,5 +107,5 @@ struct Plane : AbstractShape {
  * @param v Vector of the objects to check
  * @param ray Ray to check with
  ******************************************************/
-std::pair<AbstractShape *, IntersectionOut>
-closestIntersect(const std::vector<AbstractShape *> &v, const Ray &ray);
+std::pair<obj_pointer, IntersectionOut>
+closestIntersect(const std::vector<obj_pointer> &v, const Ray &ray);

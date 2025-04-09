@@ -361,6 +361,15 @@ inline Mat3 operator*(const Mat3 &a, const Mat3 &b) {
     return result;
 }
 
+inline Mat3 operator*(const Mat3 &a, const float &scalar) {
+    Mat3 result;
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j) {
+            result.m[i][j] = scalar * a.m[i][j];
+        }
+    return result;
+}
+
 inline Vec3 operator*(const Mat3 &a, const Vec3 &b) {
     Vec3 result;
     result.x = a.m[0][0] * b.x + a.m[0][1] * b.y + a.m[0][2] * b.z;
@@ -392,6 +401,15 @@ inline Mat4 operator*(const Mat4 &a, const Mat4 &b) {
             result.m[i][j] = 0;
             for (int k = 0; k < 4; ++k)
                 result.m[i][j] += a.m[i][k] * b.m[k][j];
+        }
+    return result;
+}
+
+inline Mat4 operator*(const Mat4 &a, const float &scalar) {
+    Mat4 result;
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 4; ++j) {
+            result.m[i][j] = scalar * a.m[i][j];
         }
     return result;
 }

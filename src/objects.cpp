@@ -1,5 +1,8 @@
 #include "objects.h"
+#include "material.h"
 #include "math.h"
+#include <iostream>
+#include <memory>
 
 IntersectionOut::IntersectionOut()
     : normal(Vec3(0, 0, 0)), point(Vec3(0, 0, 0)), hit(false),
@@ -19,8 +22,8 @@ IntersectionOut AbstractShape::intersect(const Ray &ray) {
     intsec_out.normal = transpose(frame.worldToFrame) & intsec_out.normal;
     intsec_out.normal = normalize(intsec_out.normal);
     intsec_out.point = frame.frameToWorld * intsec_out.point;
-    intsec_out.material = this->material;
-
+    intsec_out.hit_mat = material;
+    intsec_out.w0 = ray;
     return intsec_out;
 }
 
@@ -30,9 +33,11 @@ Vec3 AbstractShape::get_normal(const Vec3 &point) {
     return transpose(frame.worldToFrame) & frame_normal;
 }
 
-Triangle::Triangle(Vec3 v1, Vec3 v2, Vec3 v3) : v1(v1), v2(v2), v3(v3) {
+Triangle::Triangle(Vec3 v1, Vec3 v2, Vec3 v3, mat_pointer mat)
+    : v1(v1), v2(v2), v3(v3) {
     n = cross(v1 - v2, v2 - v3);
     n = n.normalized();
+    material = mat;
 };
 Triangle::~Triangle() {}
 
@@ -71,53 +76,65 @@ bool Triangle::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
 
 Vec3 Triangle::_get_normal(const Vec3 &point) { return this->n; }
 
-Sphere::Sphere(Vec3 centre, float radius) : c(centre), r(radius) {};
+Sphere::Sphere(Vec3 centre, float radius, std::shared_ptr<AbstractMaterial> mat)
+    : c(centre), r(radius) {
+    material = mat;
+};
 Sphere::~Sphere() {};
 
 bool Sphere::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
-    float b = (dot(ray.direction, ray.origin - this->c));
-    float c =
-        dot(ray.origin - this->c, ray.origin - this->c) - this->r * this->r;
-    if (b * b - c < 0) {
-        return false;
-    }
-    float factor = sqrt(b * b - c);
+    Vec3 L = this->c - ray.origin;
+    float tca = dot(L, ray.direction);
 
-    float t = -b + factor;
-    Vec3 point = ray.at(t);
-    intersect_out.t = t;
-    intersect_out.point = point;
-    intersect_out.normal = point - this->c;
-    return t > 0;
+    float d2 = dot(L, L) - tca * tca;
+
+    if (d2 < 0 || r * r < d2)
+        return false;
+
+    float t0 = tca - sqrt(r * r - d2);
+    if (t0 < 0) {
+        t0 = 2 * tca - t0;
+        if (t0 < 0)
+            return false;
+    }
+    intersect_out.point = ray.at(t0);
+    intersect_out.normal = (intersect_out.point - c).normalized();
+    intersect_out.t = t0;
+
+    return true;
 }
 
 Vec3 Sphere::_get_normal(const Vec3 &point) {
     Vec3 ret = point - this->c;
     return normalize(ret);
 }
-Plane::Plane(Vec3 normal, Vec3 point) : n(normal), p(point) {};
+Plane::Plane(Vec3 normal, Vec3 point, mat_pointer mat) : n(normal), p(point) {
+    material = mat;
+};
 Plane::~Plane() {};
 
 bool Plane::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
     float d = dot(ray.direction, this->n);
-    if (d < 0) {
+    if (dot(p - ray.origin, ray.direction) < 0) {
         return false;
     }
     float t = (dot(this->p - ray.origin, this->n)) / d;
+
+    if (t < 0)
+        return false;
     intersect_out.t = t;
     intersect_out.normal = this->n;
 
     intersect_out.point = ray.at(t);
-
-    return t > 0;
+    return true;
 }
 Vec3 Plane::_get_normal(const Vec3 &point) { return this->n; }
 
-std::pair<AbstractShape *, IntersectionOut>
-closestIntersect(const std::vector<AbstractShape *> &v, const Ray &ray) {
+std::pair<obj_pointer, IntersectionOut>
+closestIntersect(const std::vector<obj_pointer> &v, const Ray &ray) {
     IntersectionOut min_hit;
     min_hit.t = TINGE_INFINITY;
-    AbstractShape *min_shape = NULL;
+    obj_pointer min_shape = NULL;
     for (int i = 0; i < v.size(); i++) {
         IntersectionOut ans = v[i]->intersect(ray);
         if (ans.hit) {
@@ -128,5 +145,5 @@ closestIntersect(const std::vector<AbstractShape *> &v, const Ray &ray) {
         }
     }
 
-    return std::pair<AbstractShape *, IntersectionOut>(min_shape, min_hit);
+    return std::pair<obj_pointer, IntersectionOut>(min_shape, min_hit);
 }
