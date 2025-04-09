@@ -8,7 +8,11 @@
 #include <ostream>
 #include <thread>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#define SCENE_VIEW 0
 #include <stb_image/stb_image_write.h>
+
+std::mutex counter_mutex;
+int counter = 0;
 
 void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
                    unsigned char *data, int w1, int w2, int out_width,
@@ -21,23 +25,43 @@ void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
     for (int i = w1; i < w2; i++) {
         u = (float)i / out_width;
 
+        counter_mutex.lock();
+        if ((w2 - i) % (out_width / 100) == 0) {
+            counter++;
+
+            if (counter % 10 == 0) {
+                std::cout << "==";
+                std::flush(std::cout);
+            }
+        }
+        counter_mutex.unlock();
+
         for (int j = 0; j < out_height; j++) {
             v = 1 - (float)j / out_height;
             int pix = out_width * j + i;
 
-            const Ray ray = camera.generate_ray(u, v);
+            const Ray ray = camera.generate_ray(u, v, random_generator);
             auto hit = closestIntersect(shapes, ray);
 
             IntersectionOut &details = hit.second;
             Vec3 color(0, 0, 0);
-
             if (details.hit == true) {
-                for (int sample = 0; sample < num_samples; sample++) {
-                    color =
-                        color + Renderer::illuminance(details, depth, shapes,
-                                                      random_generator);
+
+                if (SCENE_VIEW == 0) {
+                    for (int sample = 0; sample < num_samples; sample++) {
+                        color = color + Renderer::illuminance(details, depth,
+                                                              shapes,
+                                                              random_generator);
+                    }
+                    color = color / num_samples;
+                } else if (SCENE_VIEW == 1) {
+                    color.x = (0.6 + 0.4 * dot(details.normal, ray.direction));
+                    color.y = (0.6 + 0.4 * dot(details.normal, ray.direction));
+                    color.z = (0.6 + 0.4 * dot(details.normal, ray.direction));
+                } else {
+
+                    color = details.hit_mat->color;
                 }
-                color = color / num_samples;
             } else {
                 /*color = mix(sky_white, sky_blue, v);*/
                 color = Vec3(0, 0, 0);
@@ -49,8 +73,6 @@ void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
             data[pix * 3 + 2] = (unsigned char)(255 * color.z);
         }
     }
-    std::cout << "==";
-    std::flush(std::cout);
 }
 
 void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
@@ -73,7 +95,7 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
     // Create 10 threads to run concurrently
     std::vector<std::thread> threads;
     threads.reserve(10);
-    int num_samples = 5, depth = 4;
+    int num_samples = 2, depth = 5;
 
     // Each thread renders 1/10th width of scene
     for (int i = 0; i < 10; i++) {
@@ -112,21 +134,26 @@ Vec3 Renderer::illuminance(const IntersectionOut &surface, int max_depth,
 
     // Else pick random vector according to material
     // TODO: Implement BRDF
+    bool subsurface = false;
     Vec3 dir = surface.hit_mat->sample_wi(surface.w0, surface.normal,
                                           random_generator);
-    Ray wi = Ray(surface.point, dir);
+    if (dir == Vec3(0, 0, 0))
+        return Le;
+    Ray wi = Ray(surface.point + dir * 0.01, dir);
+
     auto hit = closestIntersect(shapes, wi);
     IntersectionOut &details = hit.second;
     Vec3 Lr = Vec3(0, 0, 0);
 
     // Calculate luminance of hit point else assume no light
-    if (details.hit)
+    if (details.hit) {
         Lr = illuminance(details, max_depth - 1, shapes, random_generator);
+    }
     Vec3 Fr = surface.hit_mat->Fr(wi, surface.w0, surface.normal);
 
     // Component-wise vector multiplication
     Vec3 Li = Vec3(Fr.x * Lr.x, Fr.y * Lr.y, Fr.z * Lr.z) *
-              dot(wi.direction, surface.normal);
+              abs(dot(wi.direction, surface.normal));
 
     // Return monte-carlo sample
     return Le + Li * V;
