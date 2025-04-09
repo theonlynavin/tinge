@@ -17,7 +17,6 @@ struct IntersectionOut {
     Vec3 point;  /**< Point of intersection of the light ray*/
     Ray w0;
     mat_pointer hit_mat;
-
     IntersectionOut();
 };
 
@@ -27,7 +26,6 @@ struct IntersectionOut {
 struct AbstractShape {
     Frame frame; /**< Frame of the object*/
     mat_pointer material;
-
     /***************************************************
      * @brief Common intersection routine for all shapes
      * @param ray Light ray to check in world space

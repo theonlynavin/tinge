@@ -24,7 +24,6 @@ IntersectionOut AbstractShape::intersect(const Ray &ray) {
     intsec_out.point = frame.frameToWorld * intsec_out.point;
     intsec_out.hit_mat = material;
     intsec_out.w0 = ray;
-
     return intsec_out;
 }
 
