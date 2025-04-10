@@ -1,10 +1,9 @@
 #pragma once
 
-#include <stdexcept>
-#define _USE_MATH_DEFINES
 #define TINGE_EPSILON 1e-8f
 #define TINGE_INFINITY 1e+8f
 #include <cmath>
+#include <stdexcept>
 
 // TODO: Complete docs
 
@@ -89,7 +88,13 @@ inline Vec3 operator+(const Vec3 &a, const Vec3 &b) {
 inline Vec3 operator-(const Vec3 &a, const Vec3 &b) {
     return Vec3(a.x - b.x, a.y - b.y, a.z - b.z);
 }
+inline Vec3 operator*(const Vec3 &a, const Vec3 &b) {
+    return Vec3(a.x * b.x, a.y * b.y, a.z * b.z);
+}
 inline Vec3 operator*(const Vec3 &a, float scalar) {
+    return Vec3(a.x * scalar, a.y * scalar, a.z * scalar);
+}
+inline Vec3 operator*(float scalar, const Vec3 &a) {
     return Vec3(a.x * scalar, a.y * scalar, a.z * scalar);
 }
 inline Vec3 operator/(const Vec3 &a, float scalar) {
@@ -107,6 +112,9 @@ inline Vec4 operator-(const Vec4 &a, const Vec4 &b) {
     return Vec4(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
 }
 inline Vec4 operator*(const Vec4 &a, float scalar) {
+    return Vec4(a.x * scalar, a.y * scalar, a.z * scalar, a.w * scalar);
+}
+inline Vec4 operator*(float scalar, const Vec4 &a) {
     return Vec4(a.x * scalar, a.y * scalar, a.z * scalar, a.w * scalar);
 }
 inline Vec4 operator/(const Vec4 &a, float scalar) {

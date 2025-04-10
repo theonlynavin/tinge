@@ -9,14 +9,14 @@ double Random::GenerateUniformFloat() {
     return distribution(this->generator);
 }
 
-std::pair<double, double> Random::GenerateUniformPointDisc() {
+Vec3 Random::GenerateUniformPointDisc() {
     std::uniform_real_distribution<float> distribution(0.0, 1.0);
     double r = std::sqrt(distribution(generator));
     double theta = distribution(generator) * 2 * M_PI;
 
     double x = r * std::cos(theta);
     double y = r * std::sin(theta);
-    return {x, y};
+    return Vec3(x, y, 0);
 }
 
 Vec3 Random::GenerateUniformPointSphere() {

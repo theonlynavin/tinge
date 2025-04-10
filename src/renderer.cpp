@@ -5,6 +5,7 @@
 #include <ctime>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <ostream>
 #include <thread>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -20,11 +21,10 @@ void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
     Random random_generator = Random(time(nullptr));
     float u, v;
     Vec3 sky_blue = Vec3(0.1f, 0.5f, 0.9f);
-    /*Vec3 sky_white = Vec3(1, 1, 1);*/
+    Vec3 sky_white = Vec3(1, 1, 1);
 
+        
     for (int i = w1; i < w2; i++) {
-        u = (float)i / out_width;
-
         counter_mutex.lock();
         if ((w2 - i) % (out_width / 100) == 0) {
             counter++;
@@ -37,40 +37,40 @@ void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
         counter_mutex.unlock();
 
         for (int j = 0; j < out_height; j++) {
-            v = 1 - (float)j / out_height;
+
             int pix = out_width * j + i;
-
-            const Ray ray = camera.generate_ray(u, v, random_generator);
-            auto hit = closestIntersect(shapes, ray);
-
-            IntersectionOut &details = hit.second;
+            
             Vec3 color(0, 0, 0);
-            if (details.hit == true) {
+            
+            for (int sample = 0; sample < num_samples; sample++) {
 
-                if (SCENE_VIEW == 0) {
-                    for (int sample = 0; sample < num_samples; sample++) {
+                v = 1 - (float)(j + 2 * random_generator.GenerateUniformFloat() - 1) / out_height;
+                u = (float)(i + 2 * random_generator.GenerateUniformFloat() - 1) / out_width;
+
+                const Ray ray = camera.generate_ray(u, v, random_generator);
+                auto hit = closestIntersect(shapes, ray);
+
+                IntersectionOut &details = hit.second;
+                
+                if (details.hit == true) {
                         color = color + Renderer::illuminance(details, depth,
                                                               shapes,
                                                               random_generator);
-                    }
-                    color = color / num_samples;
-                } else if (SCENE_VIEW == 1) {
-                    color.x = (0.6 + 0.4 * dot(details.normal, ray.direction));
-                    color.y = (0.6 + 0.4 * dot(details.normal, ray.direction));
-                    color.z = (0.6 + 0.4 * dot(details.normal, ray.direction));
-                } else {
-
-                    color = details.hit_mat->color;
                 }
-            } else {
-                /*color = mix(sky_white, sky_blue, v);*/
-                color = Vec3(0, 0, 0);
+                else {
+                    color = color + mix(sky_white, sky_blue, v);
+                    //color = color + Vec3(0, 0, 0);
+                }
             }
 
+            color = color / float(num_samples);
+
+            color = clamp(color, Vec3(0, 0, 0), Vec3(1, 1, 1));
+
             // Converting normalized RGB to 8-bit RGB
-            data[pix * 3 + 0] = (unsigned char)(255 * color.x);
-            data[pix * 3 + 1] = (unsigned char)(255 * color.y);
-            data[pix * 3 + 2] = (unsigned char)(255 * color.z);
+            data[pix * 3 + 0] = (unsigned char)(255 * pow(color.x, 1/1.8));
+            data[pix * 3 + 1] = (unsigned char)(255 * pow(color.y, 1/1.8));
+            data[pix * 3 + 2] = (unsigned char)(255 * pow(color.z, 1/1.8));
         }
     }
 }
@@ -94,16 +94,17 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
 
     // Create 10 threads to run concurrently
     std::vector<std::thread> threads;
-    threads.reserve(10);
-    int num_samples = 2, depth = 5;
+    int N = 10;
+    threads.reserve(N);
+    int num_samples = 50, depth = 4;
 
     // Each thread renders 1/10th width of scene
-    for (int i = 0; i < 10; i++) {
-        threads[i] = std::thread(render_thread, camera, shapes, data, i * 192,
-                                 (i + 1) * 192, out_width, out_height,
-                                 num_samples, depth);
+    for (int i = 0; i < N; i++) {
+        threads.emplace_back(std::thread(render_thread, camera, shapes, data, i * out_width/N,
+                                 (i + 1) * out_width/N, out_width, out_height,
+                                 num_samples, depth));
     }
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < N; i++) {
         threads[i].join();
     }
 
@@ -126,7 +127,6 @@ Vec3 Renderer::illuminance(const IntersectionOut &surface, int max_depth,
                            const std::vector<obj_pointer> &shapes,
                            Random &random_generator) {
     Vec3 Le = surface.hit_mat->Le(surface.w0, surface.point);
-    float V = 2 * M_PI;
 
     // If max_depth has been reached give material emission colour
     if (max_depth == 0)
@@ -134,27 +134,28 @@ Vec3 Renderer::illuminance(const IntersectionOut &surface, int max_depth,
 
     // Else pick random vector according to material
     // TODO: Implement BRDF
-    bool subsurface = false;
-    Vec3 dir = surface.hit_mat->sample_wi(surface.w0, surface.normal,
+    Ray wi = surface.hit_mat->sample_wi(surface.w0, surface.point, surface.normal,
                                           random_generator);
-    if (dir == Vec3(0, 0, 0))
+    if (wi.direction == Vec3(0, 0, 0))
         return Le;
-    Ray wi = Ray(surface.point + dir * 0.01, dir);
 
     auto hit = closestIntersect(shapes, wi);
     IntersectionOut &details = hit.second;
-    Vec3 Lr = Vec3(0, 0, 0);
+
+    Vec3 Li = Vec3(0, 0, 0);
+    Vec3 Fr = surface.hit_mat->Fr(wi, surface.w0, surface.normal);
 
     // Calculate luminance of hit point else assume no light
     if (details.hit) {
-        Lr = illuminance(details, max_depth - 1, shapes, random_generator);
+        Li = illuminance(details, max_depth - 1, shapes, random_generator);
     }
-    Vec3 Fr = surface.hit_mat->Fr(wi, surface.w0, surface.normal);
-
-    // Component-wise vector multiplication
-    Vec3 Li = Vec3(Fr.x * Lr.x, Fr.y * Lr.y, Fr.z * Lr.z) *
-              abs(dot(wi.direction, surface.normal));
+    else
+    {
+        Li = Vec3(0.1f, 0.5f, 0.9f);
+    }
+    
+    Vec3 Lr = Fr * Li;
 
     // Return monte-carlo sample
-    return Le + Li * V;
+    return Le + Lr;
 }

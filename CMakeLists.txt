@@ -13,6 +13,10 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set(PLATFORM_NAME "mac")
 endif()
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${PLATFORM_NAME}) 
 
 # Configure sources
@@ -29,6 +33,8 @@ set(SOURCES
 
 # Build tinge :)
 add_executable(tinge ${SOURCES})
+add_compile_definitions(_USE_MATH_DEFINES)
+
 
 # External header directories
 target_include_directories(tinge PRIVATE include)
