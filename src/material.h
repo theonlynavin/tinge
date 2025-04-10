@@ -5,6 +5,7 @@
 #include "random.h"
 #include "util.h"
 #include <cmath>
+#include <memory>
 #include <ostream>
 
 class AbstractMaterial {
@@ -13,21 +14,21 @@ class AbstractMaterial {
     virtual Vec3 Le(const Ray &wo, Vec3 x) const = 0; // light emitted
     virtual Vec3 Fr(const Ray &wi, const Ray &wo,
                     Vec3 n) const = 0; // light reflected
-    virtual Vec3 sample_wi(const Ray &w_o, const Vec3 &n, Random &r) = 0;
+    virtual Ray sample_wi(const Ray &wo, const Vec3& at, const Vec3 &n, Random &r) = 0;
 };
 
 class MaterialDiffuse : public AbstractMaterial {
   public:
     MaterialDiffuse(const Vec3 &color) { this->color = color; }
     Vec3 Fr(const Ray &wi, const Ray &wo, Vec3 n) const override {
-        Vec3 return_col = color * dot(wi.direction, n);
+        Vec3 return_col = color * clamp(dot(wi.direction, n), 0, 1);
         return return_col; // light observed because of reflection
     }
     // as, most of the reflective surfaces do not emit light
     Vec3 Le(const Ray &wi, Vec3 x) const override { return Vec3(0, 0, 0); }
 
-    Vec3 sample_wi(const Ray &w_o, const Vec3 &n, Random &random_gen) override {
-        return random_gen.GenerateUniformPointHemisphere(n);
+    Ray sample_wi(const Ray &wo, const Vec3& at,const Vec3 &n, Random &random_gen) override {
+        return Ray(at + n * 1e-4f, random_gen.GenerateUniformPointHemisphere(n));
     }
 };
 
@@ -40,8 +41,8 @@ class MaterialEmissive : public AbstractMaterial {
     Vec3 Fr(const Ray &wi, const Ray &wo, Vec3 n) const override {
         return Vec3(0, 0, 0);
     }
-    Vec3 sample_wi(const Ray &w_o, const Vec3 &n, Random &random_gen) override {
-        return Vec3(0, 0, 0);
+    Ray sample_wi(const Ray &wo, const Vec3& at, const Vec3 &n, Random &random_gen) override {
+        return Ray(0, Vec3(0,0,0));
     }
 };
 
@@ -54,14 +55,14 @@ class MaterialMetallic : public AbstractMaterial {
     }
     Vec3 Le(const Ray &wi, Vec3 x) const override { return Vec3(0, 0, 0); }
     Vec3 Fr(const Ray &wi, const Ray &wo, Vec3 n) const override {
-        return color;
+        return color ;
     }
     // Diffuse with probability p
-    Vec3 sample_wi(const Ray &w_o, const Vec3 &n, Random &random_gen) override {
+    Ray sample_wi(const Ray &wo, const Vec3& at, const Vec3 &n, Random &random_gen) override {
         if (random_gen.GenerateUniformFloat() < p)
-            return random_gen.GenerateUniformPointHemisphere(n);
+            return Ray(at + n * 1e-4f, random_gen.GenerateUniformPointHemisphere(n));
         else
-            return (w_o.direction - n * 2 * dot(n, w_o.direction)).normalized();
+            return reflect(wo, at, n);
     }
 };
 
@@ -74,34 +75,19 @@ class MaterialTransmission : public AbstractMaterial {
     }
     Vec3 Le(const Ray &wi, Vec3 x) const override { return Vec3(0, 0, 0); }
     Vec3 Fr(const Ray &wi, const Ray &wo, Vec3 n) const override {
-        return color / mu;
+        return color;
     }
-    Vec3 sample_wi(const Ray &w_o, const Vec3 &n, Random &random_gen) override {
-        float dp = dot(w_o.direction, n);
+    Ray sample_wi(const Ray &wo, const Vec3& at, const Vec3 &n, Random &random_gen) override {
+        float etai_over_etat = 1/mu;
+        Vec3 outward_normal = n;
 
-        if (dp < 0) {
-            float theta = std::acos(-dp);
-            float st = std::sin(theta);
-            if (st / mu < 1) {
-                float alpha = std::asin(st / mu);
-                Vec3 perp = cross(n, cross(w_o.direction, n)).normalized();
-                return -n * std::cos(alpha) + perp * std::sin(alpha);
-            } else
-                return (w_o.direction - n * 2 * dot(n, w_o.direction))
-                    .normalized();
-
-        } else {
-            float theta = std::acos(dp);
-            float st = std::sin(theta);
-            if (st * mu < 1) {
-                float alpha = std::asin(st * mu);
-                Vec3 perp = cross(n, cross(w_o.direction, n)).normalized();
-                return n * std::cos(alpha) + perp * std::sin(alpha);
-            } else {
-                return (w_o.direction - n * 2 * dot(n, w_o.direction))
-                    .normalized();
-            }
+        if (dot(wo.direction, outward_normal) > 0) // Inside the material
+        {
+            etai_over_etat = mu;
+            outward_normal = -n;
         }
+
+        return refract(wo, at, outward_normal, etai_over_etat);
     }
 };
 
