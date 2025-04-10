@@ -41,10 +41,8 @@ Ray Camera ::generate_ray(float u, float v, Random &random_gen) {
     // Position vector for the given NDC{assumed range [0,1]}
 
     Vec3 focal_point = Ray(origin, direction.normalized()).at(focal_length);
-    auto [dx, dy] = random_gen.GenerateUniformPointDisc();
-    Vec3 n_origin = origin;
-    n_origin.x += aperture_size * dx;
-    n_origin.y += aperture_size * dy;
+    Vec3 n_origin = origin + aperture_size * random_gen.GenerateUniformPointDisc();
+    
     Vec3 n_direction = (focal_point - n_origin).normalized();
 
     return Ray(n_origin, n_direction);
@@ -78,8 +76,8 @@ void Camera::look_at(Vec3 from, Vec3 to) {
     float yaw = std::atan2(K.m[1][0], K.m[1][1]);
     float roll = std::atan2(K.m[2][1], K.m[2][2]);
 
-    frame.rotation.x = roll;
-    frame.rotation.y = pitch;
+    frame.rotation.x = -roll;
+    frame.rotation.y = -pitch;
     frame.rotation.z = yaw;
     frame.lockFrame();
 }
