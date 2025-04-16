@@ -26,7 +26,7 @@ class Random {
      * Generate a random point in a unit disc
      * @return A random point in the unit disc
      *****************************************/
-    std::pair<double, double> GenerateUniformPointDisc();
+    Vec3 GenerateUniformPointDisc();
 
     /*******************************************
      * Generate a random point on a unit sphere

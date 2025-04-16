@@ -23,6 +23,7 @@ IntersectionOut AbstractShape::intersect(const Ray &ray) {
     intsec_out.normal = normalize(intsec_out.normal);
     intsec_out.point = frame.frameToWorld * intsec_out.point;
     intsec_out.hit_mat = material;
+    intsec_out.t = (intsec_out.point - ray.origin).length();
     intsec_out.w0 = ray;
     return intsec_out;
 }
@@ -86,9 +87,10 @@ bool Sphere::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
     Vec3 L = this->c - ray.origin;
     float tca = dot(L, ray.direction);
 
-    float d2 = dot(L, L) - tca * tca;
 
-    if (d2 < 0 || r * r < d2)
+    float d2 =  dot(L, L) - tca * tca;
+
+    if (d2 > r * r)
         return false;
 
     float t0 = tca - sqrt(r * r - d2);
@@ -106,7 +108,7 @@ bool Sphere::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
 
 Vec3 Sphere::_get_normal(const Vec3 &point) {
     Vec3 ret = point - this->c;
-    return normalize(ret);
+    return ret/r;
 }
 Plane::Plane(Vec3 normal, Vec3 point, mat_pointer mat) : n(normal), p(point) {
     material = mat;
@@ -115,7 +117,7 @@ Plane::~Plane() {};
 
 bool Plane::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
     float d = dot(ray.direction, this->n);
-    if (dot(p - ray.origin, ray.direction) < 0) {
+    if (is_zero(d)) {
         return false;
     }
     float t = (dot(this->p - ray.origin, this->n)) / d;

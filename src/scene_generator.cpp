@@ -10,20 +10,20 @@
 
 void generate_scene(std::vector<obj_pointer> &shapes) {
 
-    mat_pointer emmisive = std::make_shared<MaterialEmissive>(Vec3(1, 1, 1));
+    mat_pointer emmisive = std::make_shared<MaterialEmissive>(Vec3(1, 1, 1)*10);
     obj_pointer back_wall_1 = std::make_shared<Triangle>(
-        Vec3(-3.5, 2, 0), Vec3(-3.5, -2, 0), Vec3(3.5, 2, 0), emmisive);
+        Vec3(-3.5, 2, 0), Vec3(-3.5, -2, 0),Vec3(3.5, 2, 0),  emmisive);
     obj_pointer back_wall_2 = std::make_shared<Triangle>(
-        Vec3(-3.5, -2, 0), Vec3(3.5, -2, 0), Vec3(3.5, 2, 0), emmisive);
+        Vec3(-3.5, -2, 0), Vec3(3.5, -2, 0),Vec3(3.5, 2, 0),  emmisive);
     back_wall_1->frame.origin.z = -7;
     back_wall_1->frame.lockFrame();
     back_wall_2->frame.origin.z = -7;
     back_wall_2->frame.lockFrame();
-    shapes.push_back(back_wall_1);
-    shapes.push_back(back_wall_2);
+    //shapes.push_back(back_wall_1);
+    //shapes.push_back(back_wall_2);
 
     mat_pointer right_wall_mat =
-        std::make_shared<MaterialDiffuse>(Vec3(.9, .1, .1));
+        std::make_shared<MaterialDiffuse>(Vec3(.1, .9, .1));
     obj_pointer right_wall_1 = std::make_shared<Triangle>(
         Vec3(0, 0, 0), Vec3(0, 4, -7), Vec3(0, 0, -7), right_wall_mat);
     obj_pointer right_wall_2 = std::make_shared<Triangle>(
@@ -36,7 +36,7 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     right_wall_2->frame.lockFrame();
 
     mat_pointer left_wall_mat =
-        std::make_shared<MaterialDiffuse>(Vec3(.1, .9, .1));
+        std::make_shared<MaterialMetallic>(Vec3(.9, .1, .1), 0.1);
     obj_pointer left_wall_1 = std::make_shared<Triangle>(
         Vec3(0, 0, 0), Vec3(0, 0, -7), Vec3(0, 4, -7), left_wall_mat);
     obj_pointer left_wall_2 = std::make_shared<Triangle>(
@@ -80,14 +80,18 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
 
     shapes.push_back(right_wall_1);
     shapes.push_back(right_wall_2);
-    shapes.push_back(left_wall_1);
-    shapes.push_back(left_wall_2);
-    shapes.push_back(top_wall_1);
-    shapes.push_back(top_wall_2);
+    //shapes.push_back(left_wall_1);
+    //shapes.push_back(left_wall_2);
+    //shapes.push_back(top_wall_1);
+    //shapes.push_back(top_wall_2);
     shapes.push_back(bottom_wall_1);
     shapes.push_back(bottom_wall_2);
 
-    mat_pointer metal = std::make_shared<MaterialMetallic>(Vec3(1, 1, 1), .1);
+    mat_pointer metal = std::make_shared<MaterialTransmission>(Vec3(1, 1, 1), 1.5);
+    obj_pointer sphere = std::make_shared<Sphere>(
+        Vec3(0,0,-5), 1, metal);
+    
+    shapes.push_back(sphere);
 
     // Initialize Loader
     objl::Loader Loader;
@@ -95,16 +99,16 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     objl::Mesh mesh = Loader.LoadedMeshes[0];
 
     auto common_mesh_transform = [](Frame &obj_frame) {
-        obj_frame.origin.y = -20;
+        obj_frame.origin.y = -1;
         obj_frame.origin.z = -5;
-        /*obj_frame.rotation.y = 0.73;*/
-        obj_frame.scale.x = 8;
-        obj_frame.scale.y = 8;
-        obj_frame.scale.z = 8;
+        obj_frame.scale.x = 1.3;
+        obj_frame.scale.y = 1.8;
+        obj_frame.scale.z = 1.3;
+        obj_frame.rotation.y = 0.9;
         obj_frame.lockFrame();
     };
 
-    for (int i = 0; i < mesh.Indices.size(); i += 3) {
+    /*for (int i = 0; i < mesh.Indices.size(); i += 3) {
         auto &v1 = mesh.Vertices[mesh.Indices[i]].Position;
         auto &v2 = mesh.Vertices[mesh.Indices[i + 1]].Position;
         auto &v3 = mesh.Vertices[mesh.Indices[i + 2]].Position;
@@ -113,5 +117,5 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
             Vec3(v3.X, v3.Y, v3.Z), metal);
         common_mesh_transform(triangle->frame);
         shapes.push_back(triangle);
-    }
+    }*/
 }
