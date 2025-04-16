@@ -53,9 +53,9 @@ void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
                 IntersectionOut &details = hit.second;
                 
                 if (details.hit == true) {
-                        color = color + Renderer::illuminance(details, depth,
-                                                              shapes,
-                                                              random_generator);
+                        /*color = color + Renderer::illuminance(details, depth,*/
+                        /*                                      shapes,*/
+                        /*                                      random_generator);*/
                 }
                 else {
                     color = color + mix(sky_white, sky_blue, v);

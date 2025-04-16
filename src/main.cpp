@@ -13,7 +13,7 @@ int main() {
     std::cout << "Hello there!" << std::endl;
 
     Camera camera = Camera(M_PI_2, WIDTH, HEIGHT, 10, 0);
-    camera.look_at(Vec3(0, 0, -.5), Vec3(0, 0, -4));
+    camera.look_at(Vec3(0, 0, 0), Vec3(0, 0, -5));
 
     std::vector<obj_pointer> shapes;
     // Populate scene

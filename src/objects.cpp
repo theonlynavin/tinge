@@ -87,8 +87,7 @@ bool Sphere::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
     Vec3 L = this->c - ray.origin;
     float tca = dot(L, ray.direction);
 
-
-    float d2 =  dot(L, L) - tca * tca;
+    float d2 = dot(L, L) - tca * tca;
 
     if (d2 > r * r)
         return false;
@@ -108,7 +107,7 @@ bool Sphere::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
 
 Vec3 Sphere::_get_normal(const Vec3 &point) {
     Vec3 ret = point - this->c;
-    return ret/r;
+    return ret / r;
 }
 Plane::Plane(Vec3 normal, Vec3 point, mat_pointer mat) : n(normal), p(point) {
     material = mat;
