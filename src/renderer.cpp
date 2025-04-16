@@ -57,9 +57,9 @@ void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
                 IntersectionOut &details = hit.second;
 
                 if (details.hit == true) {
-                    /*color = color + Renderer::illuminance(details, depth,*/
-                    /*                                      shapes,*/
-                    /*                                      random_generator);*/
+                    color =
+                        color + Renderer::illuminance(details, depth, shapes,
+                                                      random_generator);
                 } else {
                     color = color + mix(sky_white, sky_blue, v);
                     // color = color + Vec3(0, 0, 0);
@@ -99,19 +99,18 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
     std::vector<std::thread> threads;
     int N = 10;
     threads.reserve(N);
-    int num_samples = 50, depth = 4;
+    int num_samples = 5, depth = 4;
 
     // Each thread renders 1/10th width of scene
-    for (int i = 4; i < 5; i++) {
+    for (int i = 0; i < N; i++) {
         threads.emplace_back(std::thread(render_thread, camera, shapes, data,
                                          i * out_width / N,
                                          (i + 1) * out_width / N, out_width,
                                          out_height, num_samples, depth));
     }
-    /*for (int i = 0; i < N; i++) {*/
-    /*    threads[i].join();*/
-    /*}*/
-    threads[0].join();
+    for (int i = 0; i < N; i++) {
+        threads[i].join();
+    }
 
     std::cout << "]\n";
 

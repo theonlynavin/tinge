@@ -16,7 +16,7 @@ struct IntersectionOut {
     float t;     /**< Distance traversed by light ray */
     Vec3 point;  /**< Point of intersection of the light ray*/
     Ray w0;
-    mat_pointer hit_mat;
+    AbstractMaterial *hit_mat;
     IntersectionOut();
 };
 

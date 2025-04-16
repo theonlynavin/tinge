@@ -19,6 +19,7 @@ BVH_Box::BVH_Box(const std::string &fname, mat_pointer material, Vec3 origin,
     objl::Loader Loader;
     bool loadout = Loader.LoadFile(fname);
     objl::Mesh mesh = Loader.LoadedMeshes[0];
+    triangles.reserve(mesh.Indices.size());
 
     for (int i = 0; i < mesh.Indices.size(); i += 3) {
         auto &v1 = mesh.Vertices[mesh.Indices[i]].Position;
@@ -95,9 +96,6 @@ bool BVH_Box::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
     if (tzmax < tmax)
         tmax = tzmax;
 
-    /*intersect_out.normal = Vec3(0, 0, -1);*/
-    /*intersect_out.t = 1;*/
-    /*intersect_out.point = Vec3(1, 0, 0);*/
     auto hit = closestIntersect(triangles, ray);
     intersect_out = hit.second;
     return intersect_out.hit;

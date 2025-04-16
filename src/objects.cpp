@@ -1,7 +1,6 @@
 #include "objects.h"
 #include "material.h"
 #include "math.h"
-#include <iostream>
 #include <memory>
 
 IntersectionOut::IntersectionOut()
@@ -10,21 +9,27 @@ IntersectionOut::IntersectionOut()
 
 IntersectionOut AbstractShape::intersect(const Ray &ray) {
     Ray frame_ray = ray;
-    frame_ray.origin = this->frame.worldToFrame * frame_ray.origin;
-    frame_ray.direction = this->frame.worldToFrame & frame_ray.direction;
 
-    frame_ray.direction = normalize(frame_ray.direction);
+    if (material) {
+        frame_ray.origin = this->frame.worldToFrame * frame_ray.origin;
+        frame_ray.direction = this->frame.worldToFrame & frame_ray.direction;
+
+        frame_ray.direction = normalize(frame_ray.direction);
+    }
     IntersectionOut intsec_out;
     bool hit = this->_intersect(frame_ray, intsec_out);
     intsec_out.hit = hit;
     if (!hit)
         return intsec_out;
-    intsec_out.normal = transpose(frame.worldToFrame) & intsec_out.normal;
-    intsec_out.normal = normalize(intsec_out.normal);
-    intsec_out.point = frame.frameToWorld * intsec_out.point;
-    intsec_out.hit_mat = material;
-    intsec_out.t = (intsec_out.point - ray.origin).length();
-    intsec_out.w0 = ray;
+
+    if (material) {
+        intsec_out.normal = transpose(frame.worldToFrame) & intsec_out.normal;
+        intsec_out.normal = normalize(intsec_out.normal);
+        intsec_out.point = frame.frameToWorld * intsec_out.point;
+        intsec_out.hit_mat = material.get();
+        intsec_out.t = (intsec_out.point - ray.origin).length();
+        intsec_out.w0 = ray;
+    }
     return intsec_out;
 }
 
