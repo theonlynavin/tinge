@@ -8,6 +8,9 @@ struct Frame {
     Mat4 frameToWorld, worldToFrame;
 
     Frame();
-
+    /***********************************************************************
+     * @brief Multiplies scale, translate, rotation matrices
+     * @return Transformation matrix for frameToWorld and worldToFrame
+    ***********************************************************************/
     void lockFrame();
 };
