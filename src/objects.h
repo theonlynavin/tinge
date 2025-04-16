@@ -59,7 +59,7 @@ struct Triangle : AbstractShape {
      * @param v3 3rd vertex of the triangle
      ******************************************/
     Triangle(Vec3 v1, Vec3 v2, Vec3 v3, mat_pointer mat);
-    ~Triangle();
+    ~Triangle();                                         
 
   protected:
     bool _intersect(const Ray &ray, IntersectionOut &intsec_out) override;

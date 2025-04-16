@@ -7,6 +7,7 @@
 #include <memory>
 #include <ostream>
 #include <thread>
+#include <mutex>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define SCENE_VIEW 0
 #include <stb_image/stb_image_write.h>
@@ -99,9 +100,9 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
 
     // Each thread renders 1/10th width of scene
     for (int i = 0; i < 10; i++) {
-        threads[i] = std::thread(render_thread, camera, shapes, data, i * 192,
+        threads.emplace_back(std::thread(render_thread, camera, shapes, data, i * 192,
                                  (i + 1) * 192, out_width, out_height,
-                                 num_samples, depth);
+                                 num_samples, depth));
     }
     for (int i = 0; i < 10; i++) {
         threads[i].join();

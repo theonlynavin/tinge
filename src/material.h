@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include "camera.h"
 #include "iostream"
 #include "math.h"
@@ -6,6 +7,8 @@
 #include "util.h"
 #include <cmath>
 #include <ostream>
+
+
 
 class AbstractMaterial {
   public:
