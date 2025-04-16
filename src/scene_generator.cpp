@@ -140,8 +140,9 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
         obj_frame.rotation.y = 0.9;
         obj_frame.lockFrame();
     };
-    const std::string &fname = "box.obj";
-    obj_pointer bbox = std::make_shared<BVH_Box>("box.obj", bottom_wall_mat);
+    obj_pointer bbox = std::make_shared<BVH_Box>(
+        "teapot.obj", bottom_wall_mat, Vec3(0, -2, -5), Vec3(0.01, 0.01, 0.01),
+        Vec3());
     common_mesh_transform(bbox->frame);
     shapes.push_back(bbox);
 

@@ -8,7 +8,8 @@ struct BVH_Box : AbstractShape {
     std::vector<obj_pointer> triangles;
     Vec3 min, max;
 
-    BVH_Box(const std::string &fname, mat_pointer material);
+    BVH_Box(const std::string &fname, mat_pointer material, Vec3 origin,
+            Vec3 scale, Vec3 rotation);
     ~BVH_Box();
 
   protected:
