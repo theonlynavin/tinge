@@ -76,79 +76,165 @@ struct Vec4 {
 };
 
 // Negation operators
-
+/********************************
+A four dimensional vector class
+********************************/
 inline Vec3 operator-(const Vec3 &v) { return Vec3(-v.x, -v.y, -v.z); }
 inline Vec4 operator-(const Vec4 &v) { return Vec4(-v.x, -v.y, -v.z, -v.w); }
 
 // Standard vector arithmetic and comparision
 
+/**********************************************************
+* @brief operator defined to add two 3 dimensional vectors
+* @param a vec3
+* @param b vec3
+***********************************************************/
 inline Vec3 operator+(const Vec3 &a, const Vec3 &b) {
     return Vec3(a.x + b.x, a.y + b.y, a.z + b.z);
 }
+/**************************************************************
+* @brief operator defined to subtract two 3 dimensional vectors
+* @param a vec3
+* @param b vec3
+***************************************************************/
 inline Vec3 operator-(const Vec3 &a, const Vec3 &b) {
     return Vec3(a.x - b.x, a.y - b.y, a.z - b.z);
 }
+/************************************************************************
+* @brief operator defined to multiply the individual elements of two vector
+* @param a vec3
+* @param b vec3
+**************************************************************************/
 inline Vec3 operator*(const Vec3 &a, const Vec3 &b) {
     return Vec3(a.x * b.x, a.y * b.y, a.z * b.z);
 }
+/*****************************************************************************
+* @brief operator defined to add multipply a 3 dimensional vector by an scalar
+* @param a vec3
+* @param scalar float
+*****************************************************************************/
 inline Vec3 operator*(const Vec3 &a, float scalar) {
     return Vec3(a.x * scalar, a.y * scalar, a.z * scalar);
 }
+/*****************************************************************************
+* @brief operator defined to multiply a 3 dimensional vector by an scalar
+* @param scalar float
+* @param a vec3
+*****************************************************************************/
 inline Vec3 operator*(float scalar, const Vec3 &a) {
     return Vec3(a.x * scalar, a.y * scalar, a.z * scalar);
 }
+/*****************************************************************************
+* @brief operator defined to divide a 3 dimensional vector by an scalar
+* @param a vec3
+* @param scalar float
+*****************************************************************************/
 inline Vec3 operator/(const Vec3 &a, float scalar) {
     return (scalar != 0) ? Vec3(a.x / scalar, a.y / scalar, a.z / scalar)
                          : Vec3();
 }
+/***********************************************************************
+* @brief operator defined to check if two 3 dimensional vecors are equal
+* @param a vec3
+* @param b vec3
+************************************************************************/
 inline bool operator==(const Vec3 &a, const Vec3 &b) {
     return (a.x == b.x && a.y == b.y && a.z == b.z);
 }
-
+/**********************************************************
+* @brief operator defined to add two 4 dimensional vectors
+* @param a vec4
+* @param b vec4
+***********************************************************/
 inline Vec4 operator+(const Vec4 &a, const Vec4 &b) {
     return Vec4(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
 }
+/**************************************************************
+* @brief operator defined to subtract two 4 dimensional vectors
+* @param a vec4
+* @param b vec4
+***************************************************************/
 inline Vec4 operator-(const Vec4 &a, const Vec4 &b) {
     return Vec4(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
 }
+/********************************************************************
+* @brief operator defined to multiply a 4 dimensional vector by scalar
+* @param a vec4
+* @param scalar float
+**********************************************************************/
 inline Vec4 operator*(const Vec4 &a, float scalar) {
     return Vec4(a.x * scalar, a.y * scalar, a.z * scalar, a.w * scalar);
 }
+/********************************************************************
+* @brief operator defined to multiply a 4 dimensional vector by scalar
+* @param scalar float
+* @param a vec4
+**********************************************************************/
 inline Vec4 operator*(float scalar, const Vec4 &a) {
     return Vec4(a.x * scalar, a.y * scalar, a.z * scalar, a.w * scalar);
 }
+/********************************************************************
+* @brief operator defined to divide a 4 dimensional vector by scalar
+* @param a vec4
+* @param scalar float
+**********************************************************************/
 inline Vec4 operator/(const Vec4 &a, float scalar) {
     return (scalar != 0)
                ? Vec4(a.x / scalar, a.y / scalar, a.z / scalar, a.w / scalar)
                : Vec4();
 }
+/***********************************************************************
+* @brief operator defined to check if two 4 dimensional vecors are equal
+* @param a vec4
+* @param b vec4
+************************************************************************/
 inline bool operator==(const Vec4 &a, const Vec4 &b) {
     return (a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w);
 }
-
 // Dot product of two vectors
+/*************************************************************************
+* @brief function defined to find dot product of two 3 dimensional vectors
+* @param a vec3
+* @param b vec3
+**************************************************************************/
 inline static float dot(const Vec3 &a, const Vec3 &b) {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
-
 // Cross product of two vectors
+/***************************************************************************
+* @brief function defined to find cross product of two 3 dimensional vectors
+* @param a vec3
+* @param b vec3
+****************************************************************************/
 inline static Vec3 cross(const Vec3 &a, const Vec3 &b) {
     return Vec3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z,
                 a.x * b.y - a.y * b.x);
 }
-
 // Dot product of two vectors
+/***********************************************************************
+* @brief function defined to find dot product of two 4 dimensional vectors
+* @param a vec4
+* @param b vec4
+************************************************************************/
 inline static float dot(const Vec4 &a, const Vec4 &b) {
     return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
 }
 
 // Normalizes a vector and returns it
+/**********************************************************
+* @brief function defined to normalise 3 dimensional vector
+* @param a vec3 to be noralised
+***********************************************************/
 inline static Vec3 normalize(Vec3 &v) {
     v = v.normalized();
     return v;
 }
 
 // Normalizes a vector and returns it
+/**********************************************************
+* @brief function defined to normalise 4 dimensional vector
+* @param a vec4 to be noralised
+***********************************************************/
 inline static Vec4 normalize(Vec4 &v) {
     v = v.normalized();
     return v.normalized();
@@ -157,6 +243,9 @@ inline static Vec4 normalize(Vec4 &v) {
 /*******************
  * 3x3 Matrix class
  ******************/
+/**********************************************************
+* @brief A class the defines and constructs an 3x3 matrix
+***********************************************************/
 struct Mat3 {
     /***************************
      * Values of matrix elements
@@ -173,6 +262,9 @@ struct Mat3 {
     const float *operator[](int i) const { return m[i]; }
 
     // Transpose of the matrix
+/*****************************************************
+* @brief function defined to transpose a given matrix
+*******************************************************/
     inline Mat3 transpose() const {
         Mat3 result;
         for (int i = 0; i < 3; ++i)
@@ -182,6 +274,10 @@ struct Mat3 {
     }
 
     // Inverse of the matrix
+
+    /*************************************************************
+    * @brief function defined to find the inverse of an 3x3 matrix
+    **************************************************************/
     Mat3 inverse() const {
         // Calculate the determinant
         float det = m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
@@ -228,6 +324,10 @@ struct Mat4 {
     const float *operator[](int i) const { return m[i]; }
 
     // Transpose of the matrix
+    /************************************************************
+    * @brief function defined to find transpose of a given matrix
+    * @param mat Matrix 3x3
+    **************************************************************/
     Mat4 transpose() const {
         Mat4 result;
         for (int i = 0; i < 4; ++i)
@@ -240,6 +340,10 @@ struct Mat4 {
     // Credit to
     // https://stackoverflow.com/questions/1148309/inverting-a-4x4-matrix for
     // the painful work
+    /*********************************************************
+    * @brief function defined to find inverse of a given matrix
+    * @param mat Matrix 3x3
+    ***********************************************************/
     Mat4 inverse() const {
         float A2323 = m[2][2] * m[3][3] - m[2][3] * m[3][2];
         float A1323 = m[2][1] * m[3][3] - m[2][3] * m[3][1];
@@ -358,6 +462,11 @@ inline Mat3 operator-(const Mat3 &a, const Mat3 &b) {
     return result;
 }
 
+    /*****************************************************
+    * @brief function defined to multiply two 3x3 matrices
+    * @param a Mat3
+    * @param b Mat3
+    *******************************************************/
 inline Mat3 operator*(const Mat3 &a, const Mat3 &b) {
     Mat3 result;
     for (int i = 0; i < 3; ++i)
@@ -368,7 +477,11 @@ inline Mat3 operator*(const Mat3 &a, const Mat3 &b) {
         }
     return result;
 }
-
+   /************************************************************
+    * @brief function defined to multiply a 3x3 matrix by scalar
+    * @param a Mat3
+    * @param scalar float
+    ************************************************************/
 inline Mat3 operator*(const Mat3 &a, const float &scalar) {
     Mat3 result;
     for (int i = 0; i < 3; ++i)
@@ -377,7 +490,11 @@ inline Mat3 operator*(const Mat3 &a, const float &scalar) {
         }
     return result;
 }
-
+   /*****************************************************************************
+    * @brief function defined to multiply a 3x3 matrices by a 3 dimensional vector
+    * @param a Mat3
+    * @param b Vec3
+    *******************************************************/
 inline Vec3 operator*(const Mat3 &a, const Vec3 &b) {
     Vec3 result;
     result.x = a.m[0][0] * b.x + a.m[0][1] * b.y + a.m[0][2] * b.z;
@@ -401,7 +518,11 @@ inline Mat4 operator-(const Mat4 &a, const Mat4 &b) {
             result.m[i][j] = a.m[i][j] - b.m[i][j];
     return result;
 }
-
+   /*****************************************************
+    * @brief function defined to multiply two 4x4 matrices
+    * @param a Mat4
+    * @param b Mat4
+    *******************************************************/
 inline Mat4 operator*(const Mat4 &a, const Mat4 &b) {
     Mat4 result;
     for (int i = 0; i < 4; ++i)
@@ -412,7 +533,11 @@ inline Mat4 operator*(const Mat4 &a, const Mat4 &b) {
         }
     return result;
 }
-
+   /*****************************************************
+    * @brief function defined to multiply a 4x4 matrices
+    * @param a Matrix 4x4
+    * @param b Matrix 4x4
+    *******************************************************/
 inline Mat4 operator*(const Mat4 &a, const float &scalar) {
     Mat4 result;
     for (int i = 0; i < 4; ++i)
@@ -422,6 +547,11 @@ inline Mat4 operator*(const Mat4 &a, const float &scalar) {
     return result;
 }
 
+   /*********************************************************************************
+    * @brief function defined to multiply a 4x4 matrice with a 3 dimensional vector
+    * @param a Mat4
+    * @param b Vec3
+    **********************************************************************************/
 inline Vec3 operator*(const Mat4 &a, const Vec3 &b) {
     Vec3 result;
     result.x = a.m[0][0] * b.x + a.m[0][1] * b.y + a.m[0][2] * b.z + a.m[0][3];
@@ -429,7 +559,11 @@ inline Vec3 operator*(const Mat4 &a, const Vec3 &b) {
     result.z = a.m[2][0] * b.x + a.m[2][1] * b.y + a.m[2][2] * b.z + a.m[2][3];
     return result;
 }
-
+   /*********************************************************************************************************************************
+    * @brief function defined to multiply a 4x4 matrice with a 3 dimensional vector but the fouth component of the matrix is ignored
+    * @param a Mat4
+    * @param b Vec3
+    **********************************************************************************************************************************/
 inline Vec3 operator&(const Mat4 &a, const Vec3 &b) {
     Vec3 result;
     result.x = a.m[0][0] * b.x + a.m[0][1] * b.y + a.m[0][2] * b.z;
@@ -437,7 +571,11 @@ inline Vec3 operator&(const Mat4 &a, const Vec3 &b) {
     result.z = a.m[2][0] * b.x + a.m[2][1] * b.y + a.m[2][2] * b.z;
     return result;
 }
-
+   /*********************************************************************************************************************************
+    * @brief function defined to multiply a 4x4 matrice with a 4 dimensional vector 
+    * @param a Mat4
+    * @param b Vec4
+    **********************************************************************************************************************************/
 inline Vec4 operator*(const Mat4 &a, const Vec4 &b) {
     Vec4 result;
     result.x =
