@@ -19,24 +19,19 @@ Showcase of our renders
 
 Rays are generated from a virtual camera. Each ray is traced into the 3D scene. If it hits an object, its material defines the behavior:
 
-    -Diffuse: scattered reflection
-
-    -Metallic: specular reflection
-
-    -Transmission: refracted rays
-
-    -Emissive: light emission
+- Diffuse: scattered reflection
+- Metallic: specular reflection
+- Transmission: refracted rays
+- Emissive: light emission
 
 The process recurses with new rays (path tracing).
-
 Color contributions accumulate per pixel.
-
-Final image is saved as test.png.
+Final image is saved as a png file.
 
 
 ## HOW TO RENDER IMAGES ?
 
-You can create your own 3D models using **Blender** and import them into Tinge using the `.obj` format. Follow the steps below:
+You can create your own 3D models using Blender or any other 3D modelling software and import them into Tinge using the `.obj` format. Follow the steps below:
 
 1. Model in Blender
 
@@ -57,33 +52,38 @@ In Blender:
 This will generate:
 - `your_model.obj` — contains your model’s vertex positions, normals, and faces.
 
----
-
 3. Add the Model to Your Tinge Project
 
-Place your `.obj` file inside the Tinge folder
+* Place your `.obj` file inside the Tinge folder
+* Modify the code in the file scene_generator.cpp to set up the scene that you wish to render
 
 
 ## ENVIRONMENT REQUIREMENTS
 
-- **CMake** version 3.10 or higher
+- CMake version 3.10 or higher
 - A C++17 compatible compiler (e.g., GCC, Clang, or MSVC)
 - Operating System: Windows, Linux, or macOS
 
-* Create the build directory 
+## BUILDING TINGE
+
+* Create the build directory
+```
 mkdir build
+```
 
 * navigate to the buid directory
+```
 cd build
+```
 
 * Run CMake to configure the project
+```
 cmake ..
+```
 
 * Build the project using make
-make
+```
+make .
+```
 
-* run the program after the build is completed
-
-* image will be written into the bin folder
-
-*******************************************************************************/
+* Run the program after the build is completed, the rendered image will be written into the bin folder
