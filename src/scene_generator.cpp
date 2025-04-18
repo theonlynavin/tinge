@@ -9,8 +9,8 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
 
     mat_pointer bottom_wall_mat =
         std::make_shared<MaterialMetallic>(Vec3(.8, .8, .8), .6);
-    obj_pointer bbox = std::make_shared<BVH_Box>(
-        "teapot.obj", bottom_wall_mat, Vec3(0, -2, -5), Vec3(0.02, 0.02, 0.02),
+    obj_pointer bbox = std::make_unique<BVH_Box>(
+        "teapot.obj", bottom_wall_mat, Vec3(0, -2, -5), Vec3(0.01, 0.01, 0.01),
         Vec3());
-    shapes.push_back(bbox);
+    shapes.push_back(std::move(bbox));
 }

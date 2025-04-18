@@ -103,10 +103,10 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
 
     // Each thread renders 1/10th width of scene
     for (int i = 0; i < N; i++) {
-        threads.emplace_back(std::thread(render_thread, camera, shapes, data,
-                                         i * out_width / N,
-                                         (i + 1) * out_width / N, out_width,
-                                         out_height, num_samples, depth));
+        threads.emplace_back(
+            std::thread(render_thread, camera, std::ref(shapes), data,
+                        i * out_width / N, (i + 1) * out_width / N, out_width,
+                        out_height, num_samples, depth));
     }
     for (int i = 0; i < N; i++) {
         threads[i].join();

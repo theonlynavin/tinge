@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+enum AbstractShapeType { GeneralFrameObject, BVH_Volume, MeshObject };
+
 /**************************************************************
  * Encapsulation class for output of intersection routine
  ***************************************************************/
@@ -26,6 +28,7 @@ struct IntersectionOut {
 struct AbstractShape {
     Frame frame; /**< Frame of the object*/
     mat_pointer material;
+    AbstractShapeType type = GeneralFrameObject;
     /***************************************************
      * @brief Common intersection routine for all shapes
      * @param ray Light ray to check in world space
@@ -33,6 +36,7 @@ struct AbstractShape {
      ***************************************************/
     IntersectionOut intersect(const Ray &ray);
     Vec3 get_normal(const Vec3 &point);
+    virtual ~AbstractShape() {}
 
   protected:
     /************************************************************************
@@ -46,7 +50,7 @@ struct AbstractShape {
     virtual Vec3 _get_normal(const Vec3 &point) = 0;
 };
 
-using obj_pointer = std::shared_ptr<AbstractShape>;
+using obj_pointer = std::unique_ptr<AbstractShape>;
 
 struct Triangle : AbstractShape {
     Vec3 v1, v2, v3; /**< Position vectors of triangle vertices*/
@@ -107,5 +111,5 @@ struct Plane : AbstractShape {
  * @param v Vector of the objects to check
  * @param ray Ray to check with
  ******************************************************/
-std::pair<obj_pointer, IntersectionOut>
+std::pair<AbstractShape *, IntersectionOut>
 closestIntersect(const std::vector<obj_pointer> &v, const Ray &ray);

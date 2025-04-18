@@ -10,7 +10,7 @@ IntersectionOut::IntersectionOut()
 IntersectionOut AbstractShape::intersect(const Ray &ray) {
     Ray frame_ray = ray;
 
-    if (material) {
+    if (type == GeneralFrameObject) {
         frame_ray.origin = this->frame.worldToFrame * frame_ray.origin;
         frame_ray.direction = this->frame.worldToFrame & frame_ray.direction;
 
@@ -22,7 +22,7 @@ IntersectionOut AbstractShape::intersect(const Ray &ray) {
     if (!hit)
         return intsec_out;
 
-    if (material) {
+    if (type == GeneralFrameObject) {
         intsec_out.normal = transpose(frame.worldToFrame) & intsec_out.normal;
         intsec_out.normal = normalize(intsec_out.normal);
         intsec_out.point = frame.frameToWorld * intsec_out.point;
@@ -136,20 +136,20 @@ bool Plane::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
 }
 Vec3 Plane::_get_normal(const Vec3 &point) { return this->n; }
 
-std::pair<obj_pointer, IntersectionOut>
+std::pair<AbstractShape *, IntersectionOut>
 closestIntersect(const std::vector<obj_pointer> &v, const Ray &ray) {
     IntersectionOut min_hit;
     min_hit.t = TINGE_INFINITY;
-    obj_pointer min_shape = NULL;
+    AbstractShape *min_shape = NULL;
     for (int i = 0; i < v.size(); i++) {
         IntersectionOut ans = v[i]->intersect(ray);
         if (ans.hit) {
             if (ans.t < min_hit.t) {
                 min_hit = ans;
-                min_shape = v[i];
+                min_shape = v[i].get();
             }
         }
     }
 
-    return std::pair<obj_pointer, IntersectionOut>(min_shape, min_hit);
+    return std::pair<AbstractShape *, IntersectionOut>(min_shape, min_hit);
 }

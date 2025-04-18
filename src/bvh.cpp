@@ -15,6 +15,7 @@ Vec3 max_v_P(Vec3 m, float x, float y, float z) {
 
 BVH_Box::BVH_Box(const std::string &fname, mat_pointer material, Vec3 origin,
                  Vec3 scale, Vec3 rotation) {
+    type = BVH_Volume;
     // Initialize Loader
     objl::Loader Loader;
     bool loadout = Loader.LoadFile(fname);
@@ -25,7 +26,7 @@ BVH_Box::BVH_Box(const std::string &fname, mat_pointer material, Vec3 origin,
         auto &v1 = mesh.Vertices[mesh.Indices[i]].Position;
         auto &v2 = mesh.Vertices[mesh.Indices[i + 1]].Position;
         auto &v3 = mesh.Vertices[mesh.Indices[i + 2]].Position;
-        obj_pointer triangle = std::make_shared<Triangle>(
+        obj_pointer triangle = std::make_unique<Triangle>(
             Vec3(v1.X, v1.Y, v1.Z), Vec3(v2.X, v2.Y, v2.Z),
             Vec3(v3.X, v3.Y, v3.Z), material);
         triangle->frame.origin = origin;
@@ -33,7 +34,7 @@ BVH_Box::BVH_Box(const std::string &fname, mat_pointer material, Vec3 origin,
         triangle->frame.scale = scale;
         triangle->frame.lockFrame();
 
-        triangles.push_back(triangle);
+        triangles.push_back(std::move(triangle));
     }
 
     auto &v = mesh.Vertices[0].Position;
