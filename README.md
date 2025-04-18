@@ -1,30 +1,23 @@
 
 # Tinge
+A minimalistic path tracer
 
 <img alt="Render of our logo" src="./static/Tinge.png">
 <br/><br/>
 
-A minimalistic path tracer
+Showcase of our renders
 
 <img alt="Material render 1" src="./showcase/test_5_10.png">
 <img alt="Material render 2" src="./showcase/colour_box_1.png">
+<img alt="Material render 3" src="./showcase/metal_ball.png">
 
-/******************************************************************************
-**TINGE**
+* Renders 3D scenes using ray tracing.
+* Supports spheres, planes, triangles.
+* Materials: Diffuse, Emissive, Metallic, Refractive.
 
-**Renders 3D scenes using ray tracing.**
+## HOW IT WORKS?
 
-**Supports spheres, planes, triangles.**
-
-**Materials: Diffuse, Emissive, Metallic, Transparent.**
-
-HOW IT WORKS?
-
-Rays are generated from a virtual camera.
-
-Each ray is traced into the 3D scene.
-
-If it hits an object, its material defines the behavior:
+Rays are generated from a virtual camera. Each ray is traced into the 3D scene. If it hits an object, its material defines the behavior:
 
     -Diffuse: scattered reflection
 
@@ -41,10 +34,9 @@ Color contributions accumulate per pixel.
 Final image is saved as test.png.
 
 
-HOW TO RENDER IMAGES ?
+## HOW TO RENDER IMAGES ?
 
 You can create your own 3D models using **Blender** and import them into Tinge using the `.obj` format. Follow the steps below:
-
 
 1. Model in Blender
 
@@ -72,29 +64,26 @@ This will generate:
 Place your `.obj` file inside the Tinge folder
 
 
-**ENVIRONMENT REQUIREMENTS**
+## ENVIRONMENT REQUIREMENTS
 
 - **CMake** version 3.10 or higher
 - A C++17 compatible compiler (e.g., GCC, Clang, or MSVC)
 - Operating System: Windows, Linux, or macOS
 
-# Create the build directory 
+* Create the build directory 
 mkdir build
 
-# navigate to the buid directory
+* navigate to the buid directory
 cd build
 
-# Run CMake to configure the project
+* Run CMake to configure the project
 cmake ..
 
-# Build the project using make
+* Build the project using make
 make
 
-# build program in the editor
-Ctrl+Shift+B  -to build the code in VS code
+* run the program after the build is completed
 
-# run the program after the build is completed
-
-# image will be written into the bin folder
+* image will be written into the bin folder
 
 *******************************************************************************/
