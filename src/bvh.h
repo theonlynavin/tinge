@@ -1,18 +1,22 @@
 #pragma once
 
-#include "material.h"
+#include "math.h"
 #include "objects.h"
+#include <memory>
 #include <vector>
 
-struct BVH_Box : AbstractShape {
-    std::vector<obj_pointer> triangles;
-    Vec3 min, max;
-
-    BVH_Box(const std::string &fname, mat_pointer material, Vec3 origin,
-            Vec3 scale, Vec3 rotation);
-    ~BVH_Box();
-
-  protected:
-    bool _intersect(const Ray &ray, IntersectionOut &intersect_out) override;
-    Vec3 _get_normal(const Vec3 &point) override;
+struct BVH_Volume {
+    Vec3 min = Vec3(TINGE_INFINITY, TINGE_INFINITY, TINGE_INFINITY),
+         max = -Vec3(TINGE_INFINITY, TINGE_INFINITY, TINGE_INFINITY), centre;
+    void expand(const Vec3 &point);
+    const bool intersect(const Ray &ray) const;
 };
+
+struct BVH_Node {
+    struct BVH_Volume volume;
+    std::unique_ptr<BVH_Node> childA = nullptr;
+    std::unique_ptr<BVH_Node> childB = nullptr;
+    std::vector<std::unique_ptr<Triangle>> triangles;
+};
+
+void split(std::unique_ptr<BVH_Node> &root, int max_depth);

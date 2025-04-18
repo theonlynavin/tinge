@@ -1,9 +1,8 @@
 #include "bvh.h"
 #include "math.h"
-#include "obj_loader/OBJ_Loader.h"
-#include "objects.h"
-#include "util.h"
-#include <string>
+#include <algorithm>
+#include <iostream>
+#include <memory>
 
 Vec3 min_v_P(Vec3 m, float x, float y, float z) {
     return Vec3(m.x > x ? x : m.x, m.y > y ? y : m.y, m.z > z ? z : m.z);
@@ -13,47 +12,13 @@ Vec3 max_v_P(Vec3 m, float x, float y, float z) {
     return Vec3(m.x < x ? x : m.x, m.y < y ? y : m.y, m.z < z ? z : m.z);
 }
 
-BVH_Box::BVH_Box(const std::string &fname, mat_pointer material, Vec3 origin,
-                 Vec3 scale, Vec3 rotation) {
-    type = BVH_Volume;
-    // Initialize Loader
-    objl::Loader Loader;
-    bool loadout = Loader.LoadFile(fname);
-    objl::Mesh mesh = Loader.LoadedMeshes[0];
-    triangles.reserve(mesh.Indices.size());
-
-    for (int i = 0; i < mesh.Indices.size(); i += 3) {
-        auto &v1 = mesh.Vertices[mesh.Indices[i]].Position;
-        auto &v2 = mesh.Vertices[mesh.Indices[i + 1]].Position;
-        auto &v3 = mesh.Vertices[mesh.Indices[i + 2]].Position;
-        obj_pointer triangle = std::make_unique<Triangle>(
-            Vec3(v1.X, v1.Y, v1.Z), Vec3(v2.X, v2.Y, v2.Z),
-            Vec3(v3.X, v3.Y, v3.Z), material);
-        triangle->frame.origin = origin;
-        triangle->frame.rotation = rotation;
-        triangle->frame.scale = scale;
-        triangle->frame.lockFrame();
-
-        triangles.push_back(std::move(triangle));
-    }
-
-    auto &v = mesh.Vertices[0].Position;
-
-    min = Vec3(v.X, v.Y, v.Z);
-    max = Vec3(v.X, v.Y, v.Z);
-    for (int i = 0; i < mesh.Vertices.size(); i++) {
-        auto &v1 = mesh.Vertices[i].Position;
-        min = min_v_P(min, v1.X, v1.Y, v1.Z);
-        max = max_v_P(max, v1.X, v1.Y, v1.Z);
-    }
-
-    min = triangles[0]->frame.frameToWorld * min - Vec3(0.1, 0.1, 0.1);
-    max = triangles[0]->frame.frameToWorld * max + Vec3(0.1, 0.1, 0.1);
-    std::cout << min << max << std::endl;
+void BVH_Volume::expand(const Vec3 &point) {
+    max = max_v_P(max, point.x, point.y, point.z);
+    min = min_v_P(min, point.x, point.y, point.z);
+    centre = (max + min) / 2;
 }
 
-BVH_Box::~BVH_Box() {}
-bool BVH_Box::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
+const bool BVH_Volume::intersect(const Ray &ray) const {
     float tmin = (min.x - ray.origin.x) / ray.direction.x;
     float tmax = (max.x - ray.origin.x) / ray.direction.x;
 
@@ -91,15 +56,74 @@ bool BVH_Box::_intersect(const Ray &ray, IntersectionOut &intersect_out) {
 
     if ((tmin > tzmax) || (tzmin > tmax))
         return false;
-
-    if (tzmin > tmin)
-        tmin = tzmin;
-    if (tzmax < tmax)
-        tmax = tzmax;
-
-    auto hit = closestIntersect(triangles, ray);
-    intersect_out = hit.second;
-    return intersect_out.hit;
+    return true;
 }
 
-Vec3 BVH_Box::_get_normal(const Vec3 &point) { return Vec3(0, 0, 0); }
+void split(std::unique_ptr<BVH_Node> &root, int max_depth) {
+
+    if (!max_depth)
+        return;
+    std::unique_ptr<BVH_Node> childA = std::make_unique<BVH_Node>();
+    std::unique_ptr<BVH_Node> childB = std::make_unique<BVH_Node>();
+
+    int N = root->triangles.size();
+
+    Vec3 side_lengths = root->volume.max - root->volume.min;
+    int longest = 0;
+
+    if (side_lengths.x > side_lengths.y) {
+        if (side_lengths.z > side_lengths.x)
+            longest = 2;
+        else
+            longest = 0;
+    } else {
+        if (side_lengths.z > side_lengths.y)
+            longest = 2;
+        else
+            longest = 1;
+    }
+
+    for (int i = 0; i < N; i++) {
+        float w1, w2;
+
+        switch (longest) {
+        case 0: {
+            w1 = root->triangles[i]->centre.x;
+            w2 = root->volume.centre.x;
+            break;
+        }
+        case 1: {
+            w1 = root->triangles[i]->centre.y;
+            w2 = root->volume.centre.y;
+            break;
+        }
+        case 2: {
+            w1 = root->triangles[i]->centre.z;
+            w2 = root->volume.centre.z;
+            break;
+        }
+        };
+        bool c1 = w1 < w2;
+        bool c2 = abs(w1 - w2) < root->triangles[i]->h;
+
+        if (c2) {
+            std::unique_ptr<Triangle> copy_tr =
+                std::make_unique<Triangle>(*root->triangles[i]);
+            childA->volume.expand(root->triangles[i]->centre);
+            childA->triangles.push_back(std::move(root->triangles[i]));
+            childB->volume.expand(copy_tr->centre);
+            childB->triangles.push_back(std::move(copy_tr));
+        } else if (c1) {
+            childA->volume.expand(root->triangles[i]->centre);
+            childA->triangles.push_back(std::move(root->triangles[i]));
+        } else {
+            childB->volume.expand(root->triangles[i]->centre);
+            childB->triangles.push_back(std::move(root->triangles[i]));
+        }
+    }
+
+    root->childA = std::move(childA);
+    root->childB = std::move(childB);
+    split(root->childA, max_depth - 1);
+    split(root->childB, max_depth - 1);
+}

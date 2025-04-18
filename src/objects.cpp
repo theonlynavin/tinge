@@ -26,10 +26,13 @@ IntersectionOut AbstractShape::intersect(const Ray &ray) {
         intsec_out.normal = transpose(frame.worldToFrame) & intsec_out.normal;
         intsec_out.normal = normalize(intsec_out.normal);
         intsec_out.point = frame.frameToWorld * intsec_out.point;
-        intsec_out.hit_mat = material.get();
-        intsec_out.t = (intsec_out.point - ray.origin).length();
-        intsec_out.w0 = ray;
     }
+
+    if (type == GeneralFrameObject || type == MeshObject) {
+        intsec_out.hit_mat = material.get();
+    }
+    intsec_out.t = (intsec_out.point - ray.origin).length();
+    intsec_out.w0 = ray;
     return intsec_out;
 }
 
@@ -42,8 +45,10 @@ Vec3 AbstractShape::get_normal(const Vec3 &point) {
 Triangle::Triangle(Vec3 v1, Vec3 v2, Vec3 v3, mat_pointer mat)
     : v1(v1), v2(v2), v3(v3) {
     n = cross(v1 - v2, v2 - v3);
+    h = (v1 - v2).length() / 2;
     n = n.normalized();
     material = mat;
+    centre = (v1 + v2 + v3) / 3;
 };
 Triangle::~Triangle() {}
 

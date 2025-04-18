@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-enum AbstractShapeType { GeneralFrameObject, BVH_Volume, MeshObject };
+enum AbstractShapeType { GeneralFrameObject, MeshTriangle, MeshObject };
 
 /**************************************************************
  * Encapsulation class for output of intersection routine
@@ -55,6 +55,8 @@ using obj_pointer = std::unique_ptr<AbstractShape>;
 struct Triangle : AbstractShape {
     Vec3 v1, v2, v3; /**< Position vectors of triangle vertices*/
     Vec3 n;          /**< Normal vector of triangle*/
+    float h;
+    Vec3 centre;
 
     /******************************************
      * @brief Parametrized triangle constructor
