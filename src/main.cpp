@@ -6,14 +6,14 @@
 #include <iostream>
 #include <time.h>
 
-#define WIDTH 192*2
-#define HEIGHT 108*2
+#define WIDTH 1920
+#define HEIGHT 1080
 
 int main() {
     std::cout << "Hello there!" << std::endl;
-  
-    Camera camera = Camera(M_PI_2, WIDTH, HEIGHT, 10, 0.3);
-    camera.look_at(Vec3(1, 1, 0), Vec3(0, 0, -5));
+
+    Camera camera = Camera(M_PI_2, WIDTH, HEIGHT, 10, 0);
+    camera.look_at(Vec3(0, 0, -.5), Vec3(0, 0, -4));
 
     std::vector<obj_pointer> shapes;
     // Populate scene
