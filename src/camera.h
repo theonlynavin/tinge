@@ -57,6 +57,11 @@ static inline Ray refract(const Ray& in, const Vec3& at, const Vec3& n, float et
 }
 /************************
  * A Camera class consisting film details and related functions
+ * @par film-height : It is the vertical measurement of the film 
+ * @par film-width : It is the horizontal measurement of the film 
+ * @par focal length : Focal length of the aperture of camera 
+ * @par vertical_fov : It is the extent of observable world expressend in terms of vertical angle (in radians)
+ * @par aperture_size : Radius of the aperture of camera 
  ************************/
 struct Camera {
     float vertical_fov;

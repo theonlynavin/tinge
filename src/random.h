@@ -37,9 +37,17 @@ class Random {
 
     /**********************************************************************
      * Generate a random point on a unit hemisphere with specified 'central
-     * normal'
+     * normal' using a uniform distribution
      * @param n The central normal of the hemisphere
      * @return A random point on the specified unit hemisphere
      **********************************************************************/
     Vec3 GenerateUniformPointHemisphere(const Vec3 &n);
+
+    /**********************************************************************
+     * Generate a random point on a unit hemisphere with specified 'central
+     * normal' using a cosine weighted distribution
+     * @param n The central normal of the hemisphere
+     * @return A random point on the specified unit hemisphere
+     **********************************************************************/
+    Vec3 GenerateCosinePointHemisphere(const Vec3 &n);
 };
