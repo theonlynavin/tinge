@@ -204,5 +204,86 @@ class MaterialTransmission : public AbstractMaterial {
         return refract(wo, at, outward_normal, etai_over_etat);
     }
 };
+/***********************************
+ * A class for Dielectric Material (reflective and refractive based on Fresnel equations)
+ ***********************************/
+class MaterialDielectric : public AbstractMaterial {
+    public:
+        float refractive_index;
+        Vec3 specular_color;
+        float roughness;
+    
+        /***********************************
+         * @brief Material Dielectric Constructor
+         * @param color The diffuse color of the dielectric material
+         * @param specular_color The specular reflection color of the material
+         * @param refractive_index The refractive index of the material
+         * @param roughness Controls the microfacet roughness (0: smooth, 1: rough)
+         ***********************************/
+        MaterialDielectric(const Vec3 &color, const Vec3 &specular_color,
+                           float refractive_index, float roughness)
+            : refractive_index(refractive_index), specular_color(specular_color), roughness(roughness) {
+            this->color = color;
+        }
+    
+        /***********************************
+         * @brief The light emitted by a dielectric material
+         * @return Returns Zero Vector as dielectric materials emit no light
+         ***********************************/
+        Vec3 Le(const Ray &wi, Vec3 x) const override {
+            return Vec3(0, 0, 0);
+        }
+    
+        /***********************************
+         * @brief Compute the Fresnel term using Schlick's approximation
+         * @param cos_theta The cosine of the angle between incident light and surface normal
+         * @param refractive_index The refractive index of the dielectric material
+         * @return Fresnel reflectance value
+         ***********************************/
+        float Fresnel(float cos_theta, float refractive_index) const {
+            float r0 = pow((1 - refractive_index) / (1 + refractive_index), 2);
+            return r0 + (1 - r0) * pow(1 - cos_theta, 5);
+        }
+    
+        /***********************************
+         * @brief The Cook-Torrance BRDF function for dielectric materials
+         * @return The combined reflected and transmitted color
+         ***********************************/
+        Vec3 Fr(const Ray &wi, const Ray &wo, Vec3 n) const override {
+            float cos_theta = clamp(dot(n, wi.direction), 0.0f, 1.0f);
+            float F = Fresnel(cos_theta, refractive_index);
+    
+            // Specular reflection based on microfacet model
+            Vec3 reflected = specular_color * F;
+    
+            // Diffuse component
+            Vec3 diffuse = color * (1.0f - F) * clamp(dot(wi.direction, n), 0, 1);
+    
+            return diffuse + reflected;
+        }
+    
+        /***********************************
+         * @brief Sample reflection or refraction based on Fresnel term
+         * @param wo The outgoing ray
+         * @param at The intersection point
+         * @param n The surface normal
+         * @param random_gen Random number generator
+         * @return A reflected or refracted ray
+         ***********************************/
+        Ray sample_wi(const Ray &wo, const Vec3 &at, const Vec3 &n, Random &random_gen) override {
+            float cos_theta = clamp(dot(wo.direction, n), -1.0f, 1.0f);
+            float F = Fresnel(fabs(cos_theta), refractive_index);
+    
+            if (random_gen.GenerateUniformFloat() < F) {
+                // Reflect the ray
+                return reflect(wo, at, n);
+            } else {
+                // Refract the ray
+                float eta = (cos_theta > 0) ? refractive_index : 1.0f / refractive_index;
+                Vec3 outward_normal = (cos_theta > 0) ? -n : n;
+                return refract(wo, at, outward_normal, eta);
+            }
+        }
+    };
 
 using mat_pointer = std::shared_ptr<AbstractMaterial>;
