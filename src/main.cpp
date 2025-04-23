@@ -30,5 +30,6 @@ int main() {
                      .count()
               << "ms" << std::endl;
 
+    Renderer::cleanup();
     return 0;
 }
