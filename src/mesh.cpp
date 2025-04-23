@@ -42,7 +42,7 @@ Mesh::Mesh(const std::string &fname, mat_pointer material, Vec3 origin,
     }
 
     std::cout << root->volume.min << root->volume.max << std::endl;
-    split(root, 1);
+    split(root, 5);
 }
 
 bool traverse(const std::unique_ptr<BVH_Node> &root, const Ray &ray,
@@ -63,8 +63,33 @@ bool traverse(const std::unique_ptr<BVH_Node> &root, const Ray &ray,
 
         return intsec_out.hit;
     } else {
-        return traverse(root->childA, ray, intsec_out) ||
-               traverse(root->childB, ray, intsec_out);
+        /*IntersectionOut intsec_out_copy = intsec_out;*/
+        float h1_ = root->childA->volume.heuristic_intersect(ray);
+        float h2_ = root->childB->volume.heuristic_intersect(ray);
+
+        if (h1_ < 0) {
+            // If ray misses child A
+            // And ray misses child B
+            if (h2_ < 0)
+                return false;
+            // Check child B
+            return traverse(root->childB, ray, intsec_out);
+        } else {
+            // If ray hits child A
+            // And ray misses child B then just check child A
+            if (h2_ < 0)
+                return traverse(root->childA, ray, intsec_out);
+
+            if (h1_ < h2_) {
+                if (traverse(root->childA, ray, intsec_out))
+                    return true;
+                return traverse(root->childB, ray, intsec_out);
+            } else {
+                if (traverse(root->childB, ray, intsec_out))
+                    return true;
+                return traverse(root->childA, ray, intsec_out);
+            }
+        }
     }
 }
 
@@ -72,13 +97,12 @@ bool Mesh::_intersect(const Ray &ray, IntersectionOut &intsec_out) {
     IntersectionOut min_hit;
     min_hit.t = TINGE_INFINITY;
     min_hit.hit = false;
-    if (!root->volume.intersect(ray))
-        return false;
     bool hit = traverse(root, ray, min_hit);
-    intsec_out = min_hit;
     if (hit) {
+        intsec_out = min_hit;
+        return true;
     }
-    return hit;
+    return false;
 }
 
 Vec3 Mesh::_get_normal(const Vec3 &point) { return Vec3(0, 0, 0); }

@@ -10,6 +10,7 @@ struct BVH_Volume {
          max = -Vec3(TINGE_INFINITY, TINGE_INFINITY, TINGE_INFINITY), centre;
     void expand(const Vec3 &point);
     const bool intersect(const Ray &ray) const;
+    const float heuristic_intersect(const Ray &ray) const;
 };
 
 struct BVH_Node {

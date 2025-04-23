@@ -45,7 +45,8 @@ Vec3 AbstractShape::get_normal(const Vec3 &point) {
 Triangle::Triangle(Vec3 v1, Vec3 v2, Vec3 v3, mat_pointer mat)
     : v1(v1), v2(v2), v3(v3) {
     n = cross(v1 - v2, v2 - v3);
-    h = (v1 - v2).length() / 2;
+    h = std::max((v1 - v2).length(),
+                 std::max((v2 - v3).length(), (v1 - v3).length()));
     n = n.normalized();
     material = mat;
     centre = (v1 + v2 + v3) / 3;

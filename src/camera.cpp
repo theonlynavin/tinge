@@ -7,6 +7,9 @@ Ray ::Ray() {} // Parameterized constructor
 
 Ray ::Ray(Vec3 origin, Vec3 direction)
     : origin(origin), direction(normalize(direction)) {
+    inv_dir.x = 1 / direction.x;
+    inv_dir.y = 1 / direction.y;
+    inv_dir.z = 1 / direction.z;
 } // Parameterized constructor
 // Direction must be normalized while taking in
 

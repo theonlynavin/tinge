@@ -18,9 +18,9 @@ void BVH_Volume::expand(const Vec3 &point) {
     centre = (max + min) / 2;
 }
 
-const bool BVH_Volume::intersect(const Ray &ray) const {
-    float tmin = (min.x - ray.origin.x) / ray.direction.x;
-    float tmax = (max.x - ray.origin.x) / ray.direction.x;
+const float BVH_Volume::heuristic_intersect(const Ray &ray) const {
+    float tmin = (min.x - ray.origin.x) * ray.inv_dir.x;
+    float tmax = (max.x - ray.origin.x) * ray.inv_dir.x;
 
     if (tmin > tmax) {
         float temp = tmin;
@@ -28,8 +28,52 @@ const bool BVH_Volume::intersect(const Ray &ray) const {
         tmax = temp;
     }
 
-    float tymin = (min.y - ray.origin.y) / ray.direction.y;
-    float tymax = (max.y - ray.origin.y) / ray.direction.y;
+    float tymin = (min.y - ray.origin.y) * ray.inv_dir.y;
+    float tymax = (max.y - ray.origin.y) * ray.inv_dir.y;
+
+    if (tymin > tymax) {
+        float temp = tymin;
+        tymin = tymax;
+        tymax = temp;
+    }
+
+    if ((tmin > tymax) || (tymin > tmax))
+        return -1;
+
+    if (tymin > tmin)
+        tmin = tymin;
+    if (tymax < tmax)
+        tmax = tymax;
+
+    float tzmin = (min.z - ray.origin.z) * ray.inv_dir.z;
+    float tzmax = (max.z - ray.origin.z) * ray.inv_dir.z;
+
+    if (tzmin > tzmax) {
+        float temp = tzmin;
+        tzmin = tzmax;
+        tzmax = temp;
+    }
+
+    if ((tmin > tzmax) || (tzmin > tmax))
+        return -1;
+
+    if (tzmin > tmin)
+        tmin = tzmin;
+    return tmin;
+}
+
+const bool BVH_Volume::intersect(const Ray &ray) const {
+    float tmin = (min.x - ray.origin.x) * ray.inv_dir.x;
+    float tmax = (max.x - ray.origin.x) * ray.inv_dir.x;
+
+    if (tmin > tmax) {
+        float temp = tmin;
+        tmin = tmax;
+        tmax = temp;
+    }
+
+    float tymin = (min.y - ray.origin.y) * ray.inv_dir.y;
+    float tymax = (max.y - ray.origin.y) * ray.inv_dir.y;
 
     if (tymin > tymax) {
         float temp = tymin;
@@ -45,8 +89,8 @@ const bool BVH_Volume::intersect(const Ray &ray) const {
     if (tymax < tmax)
         tmax = tymax;
 
-    float tzmin = (min.z - ray.origin.z) / ray.direction.z;
-    float tzmax = (max.z - ray.origin.z) / ray.direction.z;
+    float tzmin = (min.z - ray.origin.z) * ray.inv_dir.z;
+    float tzmax = (max.z - ray.origin.z) * ray.inv_dir.z;
 
     if (tzmin > tzmax) {
         float temp = tzmin;
