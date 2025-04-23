@@ -5,6 +5,7 @@
 #include "random.h"
 #include "util.h"
 #include <cmath>
+#include <algorithm>
 #include <memory>
 #include <ostream>
 
@@ -212,6 +213,7 @@ class MaterialDielectric : public AbstractMaterial {
         float refractive_index;
         Vec3 specular_color;
         float roughness;
+        float s;
     
         /***********************************
          * @brief Material Dielectric Constructor
@@ -244,22 +246,43 @@ class MaterialDielectric : public AbstractMaterial {
             float r0 = pow((1 - refractive_index) / (1 + refractive_index), 2);
             return r0 + (1 - r0) * pow(1 - cos_theta, 5);
         }
-    
+        float GGX_D(float cos_thetah, float roughness) const {
+            float denom = (pow(cos_thetah, 2) * (pow(roughness, 2) - 1)) + 1;
+            float D = (pow(roughness, 2))/((pow(denom, 2))*(M_PI));
+            return D;
+        }
+        float Geometric_Attenuation(float cos_theta_in, float cos_theta_out,
+             float n_dot_h, float wo_dot_h) const {
+            float second = (2*(n_dot_h)*(cos_theta_out))/(wo_dot_h);
+            float third = (2*(n_dot_h)*(cos_theta_in))/(wo_dot_h);
+            return std::min(1.0f, std::min(second, third));
+        }
         /***********************************
          * @brief The Cook-Torrance BRDF function for dielectric materials
          * @return The combined reflected and transmitted color
          ***********************************/
         Vec3 Fr(const Ray &wi, const Ray &wo, Vec3 n) const override {
-            float cos_theta = clamp(dot(n, wi.direction), 0.0f, 1.0f);
-            float F = Fresnel(cos_theta, refractive_index);
-    
+            float cos_theta_out = clamp(dot(n, wo.direction), 0.0f, 1.0f);
+            float cos_theta_in = clamp(dot(n, wi.direction), 0.0f, 1.0f);
+
+            Vec3 temp = wi.direction+wo.direction;
+            Vec3 h = normalize(temp);
+
+            float wo_dot_h = clamp(dot(wo.direction, h), 0.0f, 1.0f);
+            float n_dot_h = clamp(dot(n, h), 0.0f, 1.0f);
+
+            float D = GGX_D(n_dot_h, roughness);
+            float G = Geometric_Attenuation(cos_theta_in, cos_theta_out, n_dot_h, wo_dot_h);
+            float F = Fresnel(wo_dot_h, refractive_index);
+
             // Specular reflection based on microfacet model
-            Vec3 reflected = specular_color * F;
+
+            Vec3 specular = specular_color * ((D * G * F)/(cos_theta_in * cos_theta_out * 4));
     
             // Diffuse component
             Vec3 diffuse = color * (1.0f - F) * clamp(dot(wi.direction, n), 0, 1);
     
-            return diffuse + reflected;
+            return diffuse + specular;
         }
     
         /***********************************
