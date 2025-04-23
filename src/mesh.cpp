@@ -16,25 +16,29 @@ Mesh::Mesh(const std::string &fname, mat_pointer material, Vec3 origin,
 
     objl::Loader Loader;
     bool loadout = Loader.LoadFile("teapot.obj");
-    objl::Mesh loaded_mesh = Loader.LoadedMeshes[0];
-
     Frame f;
     f.origin = origin;
     f.rotation = rotation;
     f.scale = scale;
     f.lockFrame();
-    for (int i = 0; i < loaded_mesh.Indices.size(); i += 3) {
-        auto &v1 = loaded_mesh.Vertices[loaded_mesh.Indices[i]].Position;
-        auto &v2 = loaded_mesh.Vertices[loaded_mesh.Indices[i + 1]].Position;
-        auto &v3 = loaded_mesh.Vertices[loaded_mesh.Indices[i + 2]].Position;
-        std::unique_ptr<Triangle> triangle = std::make_unique<Triangle>(
-            f.frameToWorld * Vec3(v1.X, v1.Y, v1.Z),
-            f.frameToWorld * Vec3(v2.X, v2.Y, v2.Z),
-            f.frameToWorld * Vec3(v3.X, v3.Y, v3.Z), material);
-        triangle->type = MeshTriangle;
 
-        root->volume.expand(triangle->centre);
-        root->triangles.push_back(std::move(triangle));
+    for (const auto &loaded_mesh : Loader.LoadedMeshes) {
+        /*objl::Mesh loaded_mesh = Loader.LoadedMeshes[0];*/
+        for (int i = 0; i < loaded_mesh.Indices.size(); i += 3) {
+            auto &v1 = loaded_mesh.Vertices[loaded_mesh.Indices[i]].Position;
+            auto &v2 =
+                loaded_mesh.Vertices[loaded_mesh.Indices[i + 1]].Position;
+            auto &v3 =
+                loaded_mesh.Vertices[loaded_mesh.Indices[i + 2]].Position;
+            std::unique_ptr<Triangle> triangle = std::make_unique<Triangle>(
+                f.frameToWorld * Vec3(v1.X, v1.Y, v1.Z),
+                f.frameToWorld * Vec3(v2.X, v2.Y, v2.Z),
+                f.frameToWorld * Vec3(v3.X, v3.Y, v3.Z), material);
+            triangle->type = MeshTriangle;
+
+            root->volume.expand(triangle->centre);
+            root->triangles.push_back(std::move(triangle));
+        }
     }
 
     std::cout << root->volume.min << root->volume.max << std::endl;
