@@ -10,9 +10,8 @@ struct Ray {
     Vec3 direction;
 
     Ray();
-/**************
- *  Parameterized constructor
- ************/ 
+    
+
     Ray(Vec3 origin, Vec3 direction);
     // Direction must be normalized while taking in
 /*************
@@ -23,9 +22,9 @@ struct Ray {
 };
 /********
  * Generates reflected ray given a ray , normal and the point of incident
- * @par incident ray
- * @par incident point 
- * @par normal ray 
+ * @param incident ray
+ * @param incident point 
+ * @param normal ray 
  * @return reflected ray 
  */
 static inline Ray reflect(const Ray& in, const Vec3& at, const Vec3& n)
@@ -34,9 +33,9 @@ static inline Ray reflect(const Ray& in, const Vec3& at, const Vec3& n)
 }
 /********
  * Generates refracted ray given a ray , normal , the point of incident and relative refractive index (named badly as eta1_eta2)
- * @par incident ray
- * @par incident point 
- * @par normal ray 
+ * @param incident ray
+ * @param incident point 
+ * @param normal ray 
  * @return refracted ray 
  */
 static inline Ray refract(const Ray& in, const Vec3& at, const Vec3& n, float eta1_eta2)

@@ -12,7 +12,8 @@ class Random {
 
   public:
     /**************************************
-     * Constructor
+     * @brief Constructor
+     * @param seed seed for the PRNG
      ***************************************/
     Random(unsigned int seed);
 
