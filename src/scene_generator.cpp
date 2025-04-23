@@ -5,8 +5,9 @@
 #include <memory>
 
 void generate_scene(std::vector<obj_pointer> &shapes) {
-
-    mat_pointer emmisive = std::make_shared<MaterialEmissive>(Vec3(.1, .1, .1));
+  
+    //sets up the backwall which is an emissive rectangle consisting of two triangle shapes having a common side
+    mat_pointer emmisive = std::make_shared<MaterialEmissive>(Vec3(1, 1, 1)*10);
     obj_pointer back_wall_1 = std::make_shared<Triangle>(
         Vec3(-3.5, -2, 0), Vec3(3.5, 2, 0), Vec3(-3.5, 2, 0), emmisive);
     obj_pointer back_wall_2 = std::make_shared<Triangle>(
@@ -15,6 +16,7 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     back_wall_1->frame.lockFrame();
     back_wall_2->frame.origin.z = -7;
     back_wall_2->frame.lockFrame();
+  
     shapes.push_back(back_wall_1);
     shapes.push_back(back_wall_2);
 
@@ -30,6 +32,7 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     shapes.push_back(front_wall_1);
     shapes.push_back(front_wall_2);
 
+    //setups the right side wall which a diffuse material rectangle consisting of two triangle shapes having a common side
     mat_pointer right_wall_mat =
         std::make_shared<MaterialDiffuse>(Vec3(.9, .1, .1));
     obj_pointer right_wall_1 = std::make_shared<Triangle>(
@@ -45,6 +48,7 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     shapes.push_back(right_wall_1);
     shapes.push_back(right_wall_2);
 
+    //setups the left side wall which a diffuse material rectangle consisting of two triangle shapes having a common side
     mat_pointer left_wall_mat =
         std::make_shared<MaterialDiffuse>(Vec3(.1, .9, .1));
     obj_pointer left_wall_1 = std::make_shared<Triangle>(
@@ -60,6 +64,7 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     shapes.push_back(left_wall_1);
     shapes.push_back(left_wall_2);
 
+    //setups the top wall which a diffuse material rectangle consisting of two triangle shapes having a common side
     mat_pointer top_wall_mat =
         std::make_shared<MaterialDiffuse>(Vec3(1, .7, .1));
     obj_pointer top_wall_1 = std::make_shared<Triangle>(
@@ -76,7 +81,8 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     top_wall_2->frame.lockFrame();
     shapes.push_back(top_wall_1);
     shapes.push_back(top_wall_2);
-
+  
+    //setups the bottom wall which a diffuse material rectangle consisting of two triangle shapes having a common side
     mat_pointer bottom_wall_mat =
         std::make_shared<MaterialDiffuse>(Vec3(.1, .1, .9));
     obj_pointer bottom_wall_1 = std::make_shared<Triangle>(
@@ -93,7 +99,7 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     bottom_wall_2->frame.lockFrame();
     shapes.push_back(bottom_wall_1);
     shapes.push_back(bottom_wall_2);
-
+  
     mat_pointer metal_ball =
         std::make_shared<MaterialMetallic>(Vec3(.6, .6, .6), 0);
     obj_pointer ball =
@@ -102,6 +108,13 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     ball->frame.origin.y = -2;
     ball->frame.lockFrame();
     shapes.push_back(ball);
+  
+    //setups the sphere which is transmissive
+    mat_pointer metal = std::make_shared<MaterialTransmission>(Vec3(1, 1, 1), 1.5);
+    obj_pointer sphere = std::make_shared<Sphere>(
+        Vec3(0,0,-5), 1, metal);
+    
+    shapes.push_back(sphere);
 
     mat_pointer light_ball =
         std::make_shared<MaterialEmissive>(Vec3(.9, .9, .1));
@@ -129,3 +142,6 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     lball3->frame.lockFrame();
     shapes.push_back(lball3);
 }
+
+
+
