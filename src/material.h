@@ -81,17 +81,19 @@ class MaterialDiffuse : public AbstractMaterial {
  * ***********************************/
 class MaterialEmissive : public AbstractMaterial {
   public:
+    float intensity = 1;
+
     /***********************************
      * @brief Material Emissive Constructor
      * @param color the color of the light emitted by the material
      ***********************************/
-    MaterialEmissive(const Vec3 &color) { this->color = color; }
+    MaterialEmissive(const Vec3 &color, float intensity) : intensity(intensity) { this->color = color; }
     // light observed because of emission
     /***********************************
      * @brief The light emitted by an emissive object
      * @return Vec 3 Color object which is the color of the light emitted
      ***********************************/
-    Vec3 Le(const Ray &wi, Vec3 x) const override { return color; }
+    Vec3 Le(const Ray &wi, Vec3 x) const override { return color * intensity; }
     // as, most of the emissive surfaces do not reflect
     /***********************************
      * @brief The light reflected in a particular direction by emissive material which is 0
