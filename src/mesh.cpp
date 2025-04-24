@@ -9,7 +9,7 @@
 #include <vector>
 
 Mesh::Mesh(const std::string &fname, mat_pointer material, Vec3 origin,
-           Vec3 scale, Vec3 rotation) {
+           Vec3 scale, Vec3 rotation, int bvh_height) {
     type = MeshObject;
     root = std::make_unique<BVH_Node>();
     this->material = material;
@@ -42,7 +42,7 @@ Mesh::Mesh(const std::string &fname, mat_pointer material, Vec3 origin,
     }
 
     std::cout << root->volume.min << root->volume.max << std::endl;
-    split(root, 5);
+    split(root, bvh_height);
 }
 
 bool traverse(const std::unique_ptr<BVH_Node> &root, const Ray &ray,
@@ -50,8 +50,6 @@ bool traverse(const std::unique_ptr<BVH_Node> &root, const Ray &ray,
     if (!root->volume.intersect(ray))
         return false;
     if (root->childA == nullptr && root->childB == nullptr) {
-        /*std::cout << "Testing triangles " << root->triangles.size()*/
-        /*          << std::endl;*/
         for (const auto &i : root->triangles) {
             IntersectionOut ans = i->intersect(ray);
             if (ans.hit) {

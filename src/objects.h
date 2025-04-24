@@ -55,8 +55,8 @@ using obj_pointer = std::unique_ptr<AbstractShape>;
 struct Triangle : AbstractShape {
     Vec3 v1, v2, v3; /**< Position vectors of triangle vertices*/
     Vec3 n;          /**< Normal vector of triangle*/
-    float h;
-    Vec3 centre;
+    float h;         /**< Bound box checking heuristic*/
+    Vec3 centre;     /**< Centroid*/
 
     /******************************************
      * @brief Parametrized triangle constructor

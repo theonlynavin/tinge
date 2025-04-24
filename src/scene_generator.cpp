@@ -12,7 +12,7 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
         std::make_shared<MaterialMetallic>(Vec3(.8, .8, .8), .6);
     obj_pointer bbox =
         std::make_unique<Mesh>("teapot.obj", mesh_mat, Vec3(0, -2, -5),
-                               2 * Vec3(0.01, 0.01, 0.01), Vec3());
+                               2 * Vec3(0.01, 0.01, 0.01), Vec3(), 7);
     shapes.push_back(std::move(bbox));
 
     // sets up the backwall which is an emissive rectangle consisting of two

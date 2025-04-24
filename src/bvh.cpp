@@ -1,18 +1,11 @@
 #include "bvh.h"
 #include "math.h"
+#include "util.h"
 #include <memory>
 
-Vec3 min_v_P(Vec3 m, float x, float y, float z) {
-    return Vec3(m.x > x ? x : m.x, m.y > y ? y : m.y, m.z > z ? z : m.z);
-}
-
-Vec3 max_v_P(Vec3 m, float x, float y, float z) {
-    return Vec3(m.x < x ? x : m.x, m.y < y ? y : m.y, m.z < z ? z : m.z);
-}
-
 void BVH_Volume::expand(const Vec3 &point) {
-    max = max_v_P(max, point.x, point.y, point.z);
-    min = min_v_P(min, point.x, point.y, point.z);
+    max = v_max(max, point);
+    min = v_min(min, point);
     centre = (max + min) / 2;
 }
 

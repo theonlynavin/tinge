@@ -17,9 +17,10 @@ struct Mesh : AbstractShape {
      * @param origin Origin of frame
      * @param scale Scale of frame
      * @param rotation Rotation of frame
+     * @param bvh_height Height of bvh
      ******************************************/
     Mesh(const std::string &fname, mat_pointer material, Vec3 origin,
-         Vec3 scale, Vec3 rotation);
+         Vec3 scale, Vec3 rotation, int bvh_height = 5);
 
   protected:
     bool _intersect(const Ray &ray, IntersectionOut &intsec_out) override;
