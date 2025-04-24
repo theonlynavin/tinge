@@ -1,7 +1,5 @@
 #include "bvh.h"
 #include "math.h"
-#include <algorithm>
-#include <iostream>
 #include <memory>
 
 Vec3 min_v_P(Vec3 m, float x, float y, float z) {
@@ -100,7 +98,9 @@ const bool BVH_Volume::intersect(const Ray &ray) const {
 
     if ((tmin > tzmax) || (tzmin > tmax))
         return false;
-    return true;
+    if (tzmin > tmin)
+        tmin = tzmin;
+    return tmin > 0;
 }
 
 void split(std::unique_ptr<BVH_Node> &root, int max_depth) {
@@ -115,6 +115,8 @@ void split(std::unique_ptr<BVH_Node> &root, int max_depth) {
     Vec3 side_lengths = root->volume.max - root->volume.min;
     int longest = 0;
 
+    // Find longest side and split it
+    // TODO: Try surface area heuristic for splitting
     if (side_lengths.x > side_lengths.y) {
         if (side_lengths.z > side_lengths.x)
             longest = 2;
@@ -147,10 +149,13 @@ void split(std::unique_ptr<BVH_Node> &root, int max_depth) {
             break;
         }
         };
+        // c1 is strict side check, c2 is hand wavey heuristic check
+        // to see if triangle is part of both sides of split
         bool c1 = w1 < w2;
         bool c2 = abs(w1 - w2) < root->triangles[i]->h;
 
         if (c2) {
+            // If both sides copy triangle and give to both children
             std::unique_ptr<Triangle> copy_tr =
                 std::make_unique<Triangle>(*root->triangles[i]);
             childA->volume.expand(root->triangles[i]->centre);

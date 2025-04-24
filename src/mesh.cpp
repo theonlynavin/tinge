@@ -80,6 +80,8 @@ bool traverse(const std::unique_ptr<BVH_Node> &root, const Ray &ray,
             if (h2_ < 0)
                 return traverse(root->childA, ray, intsec_out);
 
+            // If ray hits A and B but A's box is closer
+            // check A first if it passes through check B
             if (h1_ < h2_) {
                 if (traverse(root->childA, ray, intsec_out))
                     return true;
