@@ -28,6 +28,8 @@ set(SOURCES
     src/camera.cpp
     src/frame.cpp
     src/renderer.cpp
+    src/bvh.cpp
+    src/mesh.cpp
     src/scene_generator.cpp
 )
 

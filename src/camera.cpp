@@ -1,14 +1,15 @@
 #include "camera.h"
 #include "math.h"
-#include "util.h"
 #include <cmath>
 #include <ctime>
-#include <system_error>
 
 Ray ::Ray() {} // Parameterized constructor
 
 Ray ::Ray(Vec3 origin, Vec3 direction)
     : origin(origin), direction(normalize(direction)) {
+    inv_dir.x = 1 / direction.x;
+    inv_dir.y = 1 / direction.y;
+    inv_dir.z = 1 / direction.z;
 } // Parameterized constructor
 // Direction must be normalized while taking in
 
@@ -41,8 +42,9 @@ Ray Camera ::generate_ray(float u, float v, Random &random_gen) {
     // Position vector for the given NDC{assumed range [0,1]}
 
     Vec3 focal_point = Ray(origin, direction.normalized()).at(focal_length);
-    Vec3 n_origin = origin + aperture_size * random_gen.GenerateUniformPointDisc();
-    
+    Vec3 n_origin =
+        origin + aperture_size * random_gen.GenerateUniformPointDisc();
+
     Vec3 n_direction = (focal_point - n_origin).normalized();
 
     return Ray(n_origin, n_direction);

@@ -23,7 +23,6 @@ void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
     Vec3 sky_blue = Vec3(0.1f, 0.5f, 0.9f);
     Vec3 sky_white = Vec3(1, 1, 1);
 
-        
     for (int i = w1; i < w2; i++) {
         counter_mutex.lock();
         if ((w2 - i) % (out_width / 100) == 0) {
@@ -39,27 +38,31 @@ void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
         for (int j = 0; j < out_height; j++) {
 
             int pix = out_width * j + i;
-            
+
             Vec3 color(0, 0, 0);
-            
+
             for (int sample = 0; sample < num_samples; sample++) {
 
-                v = 1 - (float)(j + 2 * random_generator.GenerateUniformFloat() - 1) / out_height;
-                u = (float)(i + 2 * random_generator.GenerateUniformFloat() - 1) / out_width;
+                v = 1 -
+                    (float)(j + 2 * random_generator.GenerateUniformFloat() -
+                            1) /
+                        out_height;
+                u = (float)(i + 2 * random_generator.GenerateUniformFloat() -
+                            1) /
+                    out_width;
 
                 const Ray ray = camera.generate_ray(u, v, random_generator);
                 auto hit = closestIntersect(shapes, ray);
 
                 IntersectionOut &details = hit.second;
-                
+
                 if (details.hit == true) {
-                        color = color + Renderer::illuminance(details, depth,
-                                                              shapes,
-                                                              random_generator);
-                }
-                else {
+                    color =
+                        color + Renderer::illuminance(details, depth, shapes,
+                                                      random_generator);
+                } else {
                     color = color + mix(sky_white, sky_blue, v);
-                    //color = color + Vec3(0, 0, 0);
+                    // color = color + Vec3(0, 0, 0);
                 }
             }
 
@@ -68,9 +71,9 @@ void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
             color = clamp(color, Vec3(0, 0, 0), Vec3(1, 1, 1));
 
             // Converting normalized RGB to 8-bit RGB
-            data[pix * 3 + 0] = (unsigned char)(255 * pow(color.x, 1/1.8));
-            data[pix * 3 + 1] = (unsigned char)(255 * pow(color.y, 1/1.8));
-            data[pix * 3 + 2] = (unsigned char)(255 * pow(color.z, 1/1.8));
+            data[pix * 3 + 0] = (unsigned char)(255 * pow(color.x, 1 / 1.8));
+            data[pix * 3 + 1] = (unsigned char)(255 * pow(color.y, 1 / 1.8));
+            data[pix * 3 + 2] = (unsigned char)(255 * pow(color.z, 1 / 1.8));
         }
     }
 }
@@ -100,11 +103,12 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
 
     // Each thread renders 1/10th width of scene
     for (int i = 0; i < N; i++) {
-        threads.emplace_back(std::thread(render_thread, camera, shapes, data, i * out_width/N,
-                                 (i + 1) * out_width/N, out_width, out_height,
-                                 num_samples, depth));
+        threads.emplace_back(
+            std::thread(render_thread, camera, std::ref(shapes), data,
+                        i * out_width / N, (i + 1) * out_width / N, out_width,
+                        out_height, num_samples, depth));
     }
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < threads.size(); i++) {
         threads[i].join();
     }
 
@@ -134,8 +138,8 @@ Vec3 Renderer::illuminance(const IntersectionOut &surface, int max_depth,
 
     // Else pick random vector according to material
     // TODO: Implement BRDF
-    Ray wi = surface.hit_mat->sample_wi(surface.w0, surface.point, surface.normal,
-                                          random_generator);
+    Ray wi = surface.hit_mat->sample_wi(surface.w0, surface.point,
+                                        surface.normal, random_generator);
     if (wi.direction == Vec3(0, 0, 0))
         return Le;
 
@@ -148,12 +152,10 @@ Vec3 Renderer::illuminance(const IntersectionOut &surface, int max_depth,
     // Calculate luminance of hit point else assume no light
     if (details.hit) {
         Li = illuminance(details, max_depth - 1, shapes, random_generator);
-    }
-    else
-    {
+    } else {
         Li = Vec3(0.1f, 0.5f, 0.9f);
     }
-    
+
     Vec3 Lr = Fr * Li;
 
     // Return monte-carlo sample
