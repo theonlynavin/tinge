@@ -7,18 +7,17 @@
 #include <memory>
 
 void generate_scene(std::vector<obj_pointer> &shapes) {
-
     mat_pointer mesh_mat =
-        std::make_shared<MaterialMetallic>(Vec3(.8, .8, .8), .6);
+        std::make_shared<MaterialMetallic>(Vec3(.8, .8, .9), .7);
     obj_pointer bbox =
-        std::make_unique<Mesh>("teapot.obj", mesh_mat, Vec3(0, -2, -5),
-                               2 * Vec3(0.01, 0.01, 0.01), Vec3(), 7);
+        std::make_unique<Mesh>("teapot.obj", mesh_mat, Vec3(0, -1.7, -5),
+                               2 * Vec3(0.01, 0.01, 0.01), Vec3(), 10);
     shapes.push_back(std::move(bbox));
 
     // sets up the backwall which is an emissive rectangle consisting of two
     // triangle shapes having a common side
     mat_pointer emmisive =
-        std::make_shared<MaterialEmissive>(Vec3(1, 1, 1) * 10);
+        std::make_shared<MaterialEmissive>(Vec3(1, 1, 1), 0.4);
     obj_pointer back_wall_1 = std::make_unique<Triangle>(
         Vec3(-3.5, -2, 0), Vec3(3.5, 2, 0), Vec3(-3.5, 2, 0), emmisive);
     obj_pointer back_wall_2 = std::make_unique<Triangle>(
@@ -31,7 +30,8 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     shapes.push_back(std::move(back_wall_1));
     shapes.push_back(std::move(back_wall_2));
 
-    mat_pointer emmisive_ = std::make_shared<MaterialEmissive>(Vec3(0, 0, 0));
+    mat_pointer emmisive_ =
+        std::make_shared<MaterialEmissive>(Vec3(0, 0, 0), 1);
     obj_pointer front_wall_1 = std::make_unique<Triangle>(
         Vec3(3.5, 2, 0), Vec3(-3.5, -2, 0), Vec3(-3.5, 2, 0), emmisive_);
     obj_pointer front_wall_2 = std::make_unique<Triangle>(
@@ -116,7 +116,7 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     shapes.push_back(std::move(bottom_wall_2));
 
     mat_pointer light_ball =
-        std::make_shared<MaterialEmissive>(Vec3(.9, .9, .1));
+        std::make_shared<MaterialEmissive>(Vec3(.9, .9, .1), 1);
     obj_pointer lball1 =
         std::make_unique<Sphere>(Vec3(0, 0, 0), 0.6, light_ball);
     lball1->frame.origin.z = -5;

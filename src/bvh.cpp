@@ -151,15 +151,19 @@ void split(std::unique_ptr<BVH_Node> &root, int max_depth) {
             // If both sides copy triangle and give to both children
             std::unique_ptr<Triangle> copy_tr =
                 std::make_unique<Triangle>(*root->triangles[i]);
-            childA->volume.expand(root->triangles[i]->centre);
+            childA->volume.expand(root->triangles[i]->max);
+            childA->volume.expand(root->triangles[i]->min);
             childA->triangles.push_back(std::move(root->triangles[i]));
-            childB->volume.expand(copy_tr->centre);
+            childB->volume.expand(copy_tr->min);
+            childB->volume.expand(copy_tr->max);
             childB->triangles.push_back(std::move(copy_tr));
         } else if (c1) {
-            childA->volume.expand(root->triangles[i]->centre);
+            childA->volume.expand(root->triangles[i]->max);
+            childA->volume.expand(root->triangles[i]->min);
             childA->triangles.push_back(std::move(root->triangles[i]));
         } else {
-            childB->volume.expand(root->triangles[i]->centre);
+            childB->volume.expand(root->triangles[i]->max);
+            childB->volume.expand(root->triangles[i]->min);
             childB->triangles.push_back(std::move(root->triangles[i]));
         }
     }

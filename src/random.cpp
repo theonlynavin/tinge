@@ -1,14 +1,25 @@
 #include "random.h"
 #include "math.h"
 #include <cmath>
-
+/************************
+ * Constructor for generating Random number 
+ ************************/
 Random::Random(unsigned int seed) : seed(seed), generator(seed) {}
 
+/**********************
+ * Generates a random number from 0 to 1
+ * @return number from (0,1)
+ * ********************/
 double Random::GenerateUniformFloat() {
     std::uniform_real_distribution<float> distribution(0.0, 1.0);
     return distribution(this->generator);
 }
 
+/****************************
+ * Generates a random point on a disc of radius 1
+ * Sqrt is used to make more uniform distribution on the disc otherwise the randomly generated numbers will be more concentrated to center 
+ * @return random point from a disc of radius 1 
+ * ****************************/
 Vec3 Random::GenerateUniformPointDisc() {
     std::uniform_real_distribution<float> distribution(0.0, 1.0);
     double r = std::sqrt(distribution(generator));
@@ -19,12 +30,16 @@ Vec3 Random::GenerateUniformPointDisc() {
     return Vec3(x, y, 0);
 }
 
+/*********************
+ * Generates a random point on a sphere of radius 1
+ * @return point on sphere of radius 1
+ *******************/
 Vec3 Random::GenerateUniformPointSphere() {
     std::uniform_real_distribution<float> distribution(0.0, 1.0);
     float u = distribution(generator);
     float v = distribution(generator);
 
-    float theta = u * 2 * M_PI;
+    float theta = u * 2 * M_PI;                         // Using Spherical polar coordinates 
     float cos_phi = 2 * v - 1;
     float sin_phi = std::sqrt(1 - cos_phi * cos_phi);
 
@@ -36,10 +51,36 @@ Vec3 Random::GenerateUniformPointSphere() {
     return ret;
 }
 
-// Generate a random point on a hemisphere around a normal vector
+/*****************************
+ *  Generates a random point on a hemisphere around a normal vector
+ * @par n ,A 3D vector representing a normal passing through hemisphere 
+ * @return random point on the hemisphere 
+ *  */
 Vec3 Random::GenerateUniformPointHemisphere(const Vec3 &n) {
     Vec3 ret = GenerateUniformPointSphere();
     float factor = dot(ret, n) > 0 ? 1 : -1;
 
     return ret * factor;
+}
+
+// Generate a random point on a hemisphere around a normal vector
+Vec3 Random::GenerateCosinePointHemisphere(const Vec3 &n) {
+    Vec3 ret = GenerateUniformPointDisc();
+    ret.z = std::sqrt(1 - dot(ret, ret));
+
+    float c1 = 1 / (1 + n.z);
+    float c2 = n.y * c1;
+    float c3 = n.x * c1;
+    Mat3 m{};
+    m[0][0] = 1 - n.x * c3;
+    m[0][1] = -n.x * c2;
+    m[0][2] = n.x;
+    m[1][0] = -n.x * c2;
+    m[1][1] = 1 - n.y * c2;
+    m[1][2] = n.y;
+    m[2][0] = -n.x;
+    m[2][1] = -n.y;
+    m[2][2] = n.z;
+
+    return m * ret;
 }

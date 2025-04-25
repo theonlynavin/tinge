@@ -61,35 +61,44 @@ bool traverse(const std::unique_ptr<BVH_Node> &root, const Ray &ray,
 
         return intsec_out.hit;
     } else {
-        /*IntersectionOut intsec_out_copy = intsec_out;*/
         float h1_ = root->childA->volume.heuristic_intersect(ray);
-        float h2_ = root->childB->volume.heuristic_intersect(ray);
+        float h2_ = root->childA->volume.heuristic_intersect(ray);
 
-        if (h1_ < 0) {
-            // If ray misses child A
-            // And ray misses child B
-            if (h2_ < 0)
-                return false;
-            // Check child B
-            return traverse(root->childB, ray, intsec_out);
-        } else {
-            // If ray hits child A
-            // And ray misses child B then just check child A
-            if (h2_ < 0)
-                return traverse(root->childA, ray, intsec_out);
+        // If both box collisions are close check both else check closer first
+        if (abs(h1_ - h2_) < 1e-5) {
+            IntersectionOut a, b;
+            bool h1 = traverse(root->childA, ray, a);
+            bool h2 = traverse(root->childB, ray, b);
 
-            // If ray hits A and B but A's box is closer
-            // check A first if it passes through check B
-            if (h1_ < h2_) {
-                if (traverse(root->childA, ray, intsec_out))
-                    return true;
-                return traverse(root->childB, ray, intsec_out);
-            } else {
-                if (traverse(root->childB, ray, intsec_out))
-                    return true;
-                return traverse(root->childA, ray, intsec_out);
+            if (h1 && h2) {
+                if (a.t < b.t)
+                    intsec_out = a;
+                else
+                    intsec_out = b;
+                return true;
             }
+
+            if (h1) {
+                intsec_out = a;
+                return true;
+            }
+
+            if (h2) {
+                intsec_out = b;
+                return true;
+            }
+
+            return false;
+        } else if (h1_ > 0 && h1_ < h2_) {
+            if (traverse(root->childA, ray, intsec_out))
+                return true;
+            return traverse(root->childB, ray, intsec_out);
+        } else if (h2_ > 0 && h2_ < h1_) {
+            if (traverse(root->childB, ray, intsec_out))
+                return true;
+            return traverse(root->childA, ray, intsec_out);
         }
+        return false;
     }
 }
 

@@ -1,6 +1,7 @@
 #include "objects.h"
 #include "material.h"
 #include "math.h"
+#include "util.h"
 #include <memory>
 
 IntersectionOut::IntersectionOut()
@@ -45,11 +46,12 @@ Vec3 AbstractShape::get_normal(const Vec3 &point) {
 Triangle::Triangle(Vec3 v1, Vec3 v2, Vec3 v3, mat_pointer mat)
     : v1(v1), v2(v2), v3(v3) {
     n = cross(v1 - v2, v2 - v3);
-    h = std::max((v1 - v2).length(),
-                 std::max((v2 - v3).length(), (v1 - v3).length()));
+    h = ((v1 - v2).length() + (v2 - v3).length() + (v1 - v3).length()) / 3;
     n = n.normalized();
     material = mat;
     centre = (v1 + v2 + v3) / 3;
+    max = v_max(v_max(v1, v2), v3);
+    min = v_min(v_min(v1, v2), v3);
 };
 Triangle::~Triangle() {}
 
