@@ -7,7 +7,6 @@
 #include <memory>
 
 void generate_scene(std::vector<obj_pointer> &shapes) {
-
     mat_pointer mesh_mat =
         std::make_shared<MaterialMetallic>(Vec3(.8, .8, .9), .7);
     obj_pointer bbox =
@@ -115,7 +114,7 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     shapes.push_back(std::move(bottom_wall_2));
 
     mat_pointer light_ball =
-        std::make_shared<MaterialEmissive>(Vec3(.9, .9, .1));
+        std::make_shared<MaterialEmissive>(Vec3(.9, .9, .1), 4);
     obj_pointer lball1 =
         std::make_unique<Sphere>(Vec3(0, 0, 0), 0.6, light_ball);
     lball1->frame.origin.z = -5;

@@ -13,12 +13,12 @@ enum AbstractShapeType { GeneralFrameObject, MeshTriangle, MeshObject };
  * Encapsulation class for output of intersection routine
  ***************************************************************/
 struct IntersectionOut {
-    bool hit;    /**< Check if the ray hit*/
-    Vec3 normal; /**< Normal vector at point of intersection */
-    float t;     /**< Distance traversed by light ray */
-    Vec3 point;  /**< Point of intersection of the light ray*/
-    Ray w0;
-    AbstractMaterial *hit_mat;
+    bool hit;            /**< Check if the ray hit*/
+    Vec3 normal;         /**< Normal vector at point of intersection */
+    float t;             /**< Distance traversed by light ray */
+    Vec3 point;          /**< Point of intersection of the light ray*/
+    Ray w0;              /**< Incoming light ray*/
+    mat_pointer hit_mat; /**< Material of hit object*/
     IntersectionOut();
 };
 
@@ -65,6 +65,7 @@ struct Triangle : AbstractShape {
      * @param v1 1st vertex of the triangle
      * @param v2 2nd vertex of the triangle
      * @param v3 3rd vertex of the triangle
+     * @param mat Matrerial of the shape
      ******************************************/
     Triangle(Vec3 v1, Vec3 v2, Vec3 v3, mat_pointer mat);
     ~Triangle();
@@ -82,6 +83,7 @@ struct Sphere : AbstractShape {
      * @brief Parametrized sphere constructor
      * @param centre Centre of the sphere
      * @param radius Radius of the sphere
+     * @param mat Matrerial of the shape
      ***********************************************/
     Sphere(Vec3 centre, float radius,
            mat_pointer mat); // Parametrized Sphere constructor
@@ -100,6 +102,7 @@ struct Plane : AbstractShape {
      * @brief Parametrized sphere constructor
      * @param normal Normal of the sphere
      * @param point A point on the plane of the sphere
+     * @param mat Matrerial of the shape
      ***********************************************************/
     Plane(Vec3 normal, Vec3 point,
           mat_pointer mat); // Parametrized triangle constructor
