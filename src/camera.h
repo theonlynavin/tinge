@@ -30,6 +30,18 @@ struct Ray {
 static inline Ray reflect(const Ray &in, const Vec3 &at, const Vec3 &n) {
     return Ray(at + 1e-4f * n, in.direction - (2 * dot(n, in.direction)) * n);
 }
+
+/***********************************
+ * @brief Compute the Fresnel term using Schlick's approximation
+ * @param cos_theta The cosine of the angle between incident light and surface normal
+ * @param refractive_index The refractive index of the dielectric material
+ * @return Fresnel reflectance value
+ ***********************************/
+static inline float fresnel(float cos_theta, float refractive_index) {
+    float r0 = pow((1 - refractive_index) / (1 + refractive_index), 2);
+    return r0 + (1 - r0) * pow(1 - cos_theta, 5);
+}
+
 /********
  * Generates refracted ray given a ray , normal , the point of incident and
  * relative refractive index (named badly as eta1_eta2)

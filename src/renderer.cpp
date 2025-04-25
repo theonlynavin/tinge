@@ -154,11 +154,6 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
     unsigned char *data = new unsigned char[out_width * out_height * 3];
     Random random_generator = Random(time(nullptr));
 
-    if (env_light) {
-        std::string envmap_file_path = "envmap.hdr";
-        Renderer::env_map(envmap_file_path);
-    }
-
     // NDC coordinates
     float u, v;
     std::cout << " 0 1 2 3 4 5 6 7 8 9 \n[";
@@ -167,7 +162,8 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
     std::vector<std::thread> threads;
     int N = 10;
     threads.reserve(N);
-    int num_samples = 50, depth = 4;
+  
+    int num_samples = 300, depth = 4;
 
     // Each thread renders 1/10th width of scene
     for (int i = 0; i < N; i++) {
@@ -235,13 +231,15 @@ Vec3 Renderer::illuminance(const IntersectionOut &surface, int max_depth,
     // TODO: Try using approximated variance to calculate
     //
     // Use larger number of samples to remove "sparkles"
-    float p = std::max(Fr.x, std::max(Fr.y, Fr.z));
+    float p = 1;
+    //clamp(std::max(Fr.x, std::max(Fr.y, Fr.z)), 0.01, 1);
+
+    if (random_generator.GenerateUniformFloat() > p)
+        return Vec3(0,0,0);
 
     // Calculate luminance of hit point else assume no light
     if (details.hit) {
         // Darker light -> More chance of skipping
-        if (random_generator.GenerateUniformFloat() > p)
-            return Le;
         Li = illuminance(details, max_depth - 1, shapes, random_generator);
     } else {
         if (env_data) {

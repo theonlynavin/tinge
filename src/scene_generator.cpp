@@ -7,7 +7,8 @@
 #include <memory>
 
 void generate_scene(std::vector<obj_pointer> &shapes) {
-    mat_pointer mesh_mat =
+
+  mat_pointer mesh_mat =
         std::make_shared<MaterialMetallic>(Vec3(.8, .8, .9), .7);
     obj_pointer bbox =
         std::make_unique<Mesh>("teapot.obj", mesh_mat, Vec3(0, -1.7, -5),
@@ -114,6 +115,26 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     bottom_wall_2->frame.lockFrame();
     shapes.push_back(std::move(bottom_wall_1));
     shapes.push_back(std::move(bottom_wall_2));
+  
+    mat_pointer glass = std::make_shared<MaterialDielectric>(Vec3(1, 1, 1), Vec3(1, 1, 1), 1.5, 0);
+
+    mat_pointer plastic = std::make_shared<MaterialDielectric>(Vec3(0.8, 0.2, 0.3), Vec3(0.8, 0.2, 0.3), 1.2, 0.2);
+
+    
+    mat_pointer metal_ball =
+       std::make_shared<MaterialMetallic>(Vec3(.6, .6, .6), 0);
+    obj_pointer ball =
+        std::make_shared<Sphere>(Vec3(0, 1.2, 0), 1.2, glass);
+    ball->frame.origin.z = -3;
+    ball->frame.origin.y = -2;
+    ball->frame.lockFrame();
+    shapes.push_back(ball);
+  
+    //setups the sphere which is transmissive
+    obj_pointer sphere = std::make_shared<Sphere>(
+        Vec3(0,0,-5), 0.6, glass);
+    
+    //shapes.push_back(sphere);
 
     mat_pointer light_ball =
         std::make_shared<MaterialEmissive>(Vec3(.9, .9, .1), 1);
