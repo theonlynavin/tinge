@@ -4,8 +4,8 @@
 #include "math.h"
 #include "random.h"
 #include "util.h"
-#include <cmath>
 #include <algorithm>
+#include <cmath>
 #include <memory>
 #include <ostream>
 
@@ -219,20 +219,18 @@ class MaterialTransmission : public AbstractMaterial {
 class MaterialDielectric : public AbstractMaterial {
     public:
         float refractive_index;
-        Vec3 specular_color;
         float roughness;
         float s = 0.2;
     
         /***********************************
          * @brief Material Dielectric Constructor
          * @param color The diffuse color of the dielectric material
-         * @param specular_color The specular reflection color of the material
          * @param refractive_index The refractive index of the material
          * @param roughness Controls the microfacet roughness (0: smooth, 1: rough)
          ***********************************/
         MaterialDielectric(const Vec3 &color, const Vec3 &specular_color,
                            float refractive_index, float roughness)
-            : refractive_index(refractive_index), specular_color(specular_color), roughness(roughness) {
+            : refractive_index(refractive_index), roughness(roughness) {
             this->color = color;
         }
     
@@ -254,6 +252,13 @@ class MaterialDielectric : public AbstractMaterial {
             float r0 = pow((1 - refractive_index) / (1 + refractive_index), 2);
             return r0 + (1 - r0) * pow(1 - cos_theta, 5);
         }
+    
+        /***********************************
+         * @brief GGX Normal Distribution Function (NDF) for microfacet distribution
+         * @param cos_thetah Cosine of the angle between the normal and halfway vector
+         * @param roughness Surface roughness of the material
+         * @return Distribution factor for microfacets
+         ***********************************/
         float GGX_D(float cos_thetah, float roughness) const {
             float a2 = roughness * roughness;
             float denom = (cos_thetah * cos_thetah) * (a2 - 1) + 1;
@@ -266,11 +271,13 @@ class MaterialDielectric : public AbstractMaterial {
             float third = (2*(n_dot_h)*(cos_theta_in))/(wo_dot_h);
             return std::min(1.0f, std::min(second, third));
         }
+    
         /***********************************
          * @brief The Cook-Torrance BRDF function for dielectric materials
          * @return The combined reflected and transmitted color
          ***********************************/
         Vec3 Fr(const Ray &wi, const Ray &wo, Vec3 n) const override {
+            float cos_theta_out = clamp(dot(n, -wo.direction), 0.0f, 1.0f);
             float cos_theta_out = clamp(dot(n, -wo.direction), 0.0f, 1.0f);
             float cos_theta_in = clamp(dot(n, wi.direction), 0.0f, 1.0f);
 
@@ -283,24 +290,22 @@ class MaterialDielectric : public AbstractMaterial {
             float D = GGX_D(n_dot_h, clamp(roughness, 1e-5f, 1));
             float G = Geometric_Attenuation(cos_theta_in, cos_theta_out, n_dot_h, wo_dot_h);
             float F = Fresnel(wo_dot_h, refractive_index);
-
+    
             // Specular reflection based on microfacet model
-
-            Vec3 specular = specular_color * ((D * G * F)/(cos_theta_in * cos_theta_out * 4));
+            Vec3 specular = s * color * (D * G * F / (4 * cos_theta_out));
     
             // Diffuse component
             Vec3 diffuse = color * (1.0f - F) * clamp(dot(wi.direction, n), 0, 1);
 
             return diffuse + specular;
         }
-    
         /***********************************
-         * @brief Sample reflection or refraction based on Fresnel term
-         * @param wo The outgoing ray
-         * @param at The intersection point
-         * @param n The surface normal
-         * @param random_gen Random number generator
-         * @return A reflected or refracted ray
+         * @brief Generates the rays reflected by the dielectric material
+         * @param wo the incoming ray direction
+         * @param at the point of incidence of the reflection, implemented to prevent floating point errors
+         * @param n the normal of the object
+         * @param random_gen random number generator 
+         * @return The direction of the ray reflected
          ***********************************/
         Ray sample_wi(const Ray &wo, const Vec3 &at, const Vec3 &n, Random &random_gen) override {
             float cos_theta = clamp(dot(wo.direction, n), -1.0f, 1.0f);
@@ -318,4 +323,4 @@ class MaterialDielectric : public AbstractMaterial {
         }
     };
 
-using mat_pointer = std::shared_ptr<AbstractMaterial>;
+    using mat_pointer = std::shared_ptr<AbstractMaterial>;
