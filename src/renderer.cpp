@@ -5,7 +5,6 @@
 #include "util.h"
 #include <ctime>
 #include <iostream>
-#include <memory>
 #include <mutex>
 #include <ostream>
 #include <thread>
@@ -18,61 +17,63 @@
 #include "stb_image/stb_image.h"
 
 /*********************************************************************************
- *  env_width : width of environment image 
- *  env_height : height of env. image 
- *  env_channels : no of parameters used to represent a color 
- *  env_data : pointer to the array having RGB details of the environment image 
+ *  env_width : width of environment image
+ *  env_height : height of env. image
+ *  env_channels : no of parameters used to represent a color
+ *  env_data : pointer to the array having RGB details of the environment image
  **********************************************************************************/
 int env_width, env_height, env_channels;
-float* env_data = nullptr;
+float *env_data = nullptr;
 
 /*************************************
- * Used to show rendering progress 
+ * Used to show rendering progress
  *************************************/
 std::mutex counter_mutex;
 int counter = 0;
 
 /**************************************
- * Mapping to environment 
- * @par direction of the shooted ray 
- * @return RGB value of the environment 
+ * Mapping to environment
+ * @par direction of the shooted ray
+ * @return RGB value of the environment
  ****************************************/
-Vec3 sample_env_map(const Vec3& dir) {
+Vec3 sample_env_map(const Vec3 &dir) {
     float theta = acos(clamp(dir.y, -1.0f, 1.0f)); // polar angle
-    float phi = atan2(dir.z, dir.x);              // azimuth
+    float phi = atan2(dir.z, dir.x);               // azimuth
 
-    if (phi < 0) phi += 2 * M_PI; // makes phi>=0 and < 2pi 
+    if (phi < 0)
+        phi += 2 * M_PI; // makes phi>=0 and < 2pi
 
-    float u = phi / (2 * M_PI);  
+    float u = phi / (2 * M_PI);
     float v = theta / M_PI;
 
-    int x = clamp(int(u * env_width), 0, env_width - 1);   // corresponding U,V coordinates  
-    int y = clamp(int((1-v) * env_height), 0, env_height - 1);
+    int x = clamp(int(u * env_width), 0,
+                  env_width - 1); // corresponding U,V coordinates
+    int y = clamp(int((1 - v) * env_height), 0, env_height - 1);
 
-    int index = (y * env_width + x) * env_channels; //index in env_data 
+    int index = (y * env_width + x) * env_channels; // index in env_data
 
-    return Vec3(env_data[index], env_data[index + 1], env_data[index + 2]) * 0.2;
-  
+    return Vec3(env_data[index], env_data[index + 1], env_data[index + 2]);
 }
 
 Vec3 sky_white = Vec3(1, 1, 1);
 Vec3 sky_blue = Vec3(0.1f, 0.5f, 0.9f);
 
 /******************************************************************
- * @brief Uniform gradient from sky blue to sky white 
- * @par Direction of ray 
- * @return environment light for a particular y-coordinate 
+ * @brief Uniform gradient from sky blue to sky white
+ * @par Direction of ray
+ * @return environment light for a particular y-coordinate
  ******************************************************************/
-Vec3 Renderer::env_light_gradient(const Vec3& dir) {
-    float t = 0.5f * (dir.y + 1.0f);  // [-1, 1] → [0, 1]
+Vec3 Renderer::env_light_gradient(const Vec3 &dir) {
+    float t = 0.5f * (dir.y + 1.0f); // [-1, 1] → [0, 1]
     return mix(sky_white, sky_blue, t);
 }
 
 /****************************************************************************************
  * @brief Takes a chunk of the image
- * @return Gives the pixel value at each point in that width of image. 
+ * @return Gives the pixel value at each point in that width of image.
  * @return If the point is outside the object, mixes
- * white and skyblue based on the height , but if HDR file is accessible then maps to that 
+ * white and skyblue based on the height , but if HDR file is accessible then
+ *maps to that
  *****************************************************************************************/
 void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
                    unsigned char *data, int w1, int w2, int out_width,
@@ -119,12 +120,12 @@ void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
                     color =
                         color + Renderer::illuminance(details, depth, shapes,
                                                       random_generator);
-                }
-                else {
+                } else {
                     if (env_data) {
                         color = color + sample_env_map(ray.direction);
                     } else {
-                        color = color + Renderer::env_light_gradient(ray.direction);
+                        color =
+                            color + Renderer::env_light_gradient(ray.direction);
                     }
                 }
             }
@@ -143,7 +144,8 @@ void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
 
 /************************************************************************************
  * @brief Takes values of pixels from all the chunks (here,10)
- * @return Joins all of them to give the pixel values of all the points of the image.
+ * @return Joins all of them to give the pixel values of all the points of the
+ *image.
  ***********************************************************************************/
 void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
                       const std::string &outfile, int out_width, int out_height,
@@ -151,11 +153,6 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
 
     unsigned char *data = new unsigned char[out_width * out_height * 3];
     Random random_generator = Random(time(nullptr));
-
-    if(env_light){
-        std::string envmap_file_path = "E:/HDRi/paul_lobe_haus_8k.hdr";  
-        Renderer::env_map(envmap_file_path);
-    }
 
     // NDC coordinates
     float u, v;
@@ -165,16 +162,17 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
     std::vector<std::thread> threads;
     int N = 10;
     threads.reserve(N);
+  
     int num_samples = 300, depth = 4;
 
     // Each thread renders 1/10th width of scene
     for (int i = 0; i < N; i++) {
-        threads.emplace_back(std::thread(render_thread, camera, shapes, data,
-                                         i * out_width / N,
-                                         (i + 1) * out_width / N, out_width,
-                                         out_height, num_samples, depth));
+        threads.emplace_back(
+            std::thread(render_thread, camera, std::ref(shapes), data,
+                        i * out_width / N, (i + 1) * out_width / N, out_width,
+                        out_height, num_samples, depth));
     }
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < threads.size(); i++) {
         threads[i].join();
     }
 
@@ -186,15 +184,16 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
 }
 
 /**********************************************************************************
- * @brief Loads the HDR file and stores it in env_data as float* array 
- * @par Environment file path 
+ * @brief Loads the HDR file and stores it in env_data as float* array
+ * @par Environment file path
  * Also initiates the env_depth , env_height and env_channels( here 3 for RGB )
  **********************************************************************************/
-void Renderer::env_map(const std::string& envmap_file_path) {
+void Renderer::env_map(const std::string &envmap_file_path) {
     stbi_set_flip_vertically_on_load(true);
     // std::cout << stbi_is_hdr(envmap_file_path.data()) << "\n";
-    env_data = stbi_loadf(envmap_file_path.c_str(), &env_width, &env_height, &env_channels, 0);
-    
+    env_data = stbi_loadf(envmap_file_path.c_str(), &env_width, &env_height,
+                          &env_channels, 0);
+
     if (env_data == nullptr) {
         std::cerr << "Failed to load HDR environment map\n";
         exit(1);
@@ -242,13 +241,10 @@ Vec3 Renderer::illuminance(const IntersectionOut &surface, int max_depth,
     if (details.hit) {
         // Darker light -> More chance of skipping
         Li = illuminance(details, max_depth - 1, shapes, random_generator);
-    }
-    else
-    { 
+    } else {
         if (env_data) {
             Li = sample_env_map(wi.direction);
-        } 
-        else {
+        } else {
             Li = env_light_gradient(wi.direction);
         }
     }
@@ -259,9 +255,8 @@ Vec3 Renderer::illuminance(const IntersectionOut &surface, int max_depth,
     return Le + Lr;
 }
 
-
 /**************************************************
- * @brief Free up the space given to env_data file 
+ * @brief Free up the space given to env_data file
  **************************************************/
 void Renderer::cleanup() {
     if (env_data != nullptr) {

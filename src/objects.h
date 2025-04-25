@@ -7,16 +7,18 @@
 #include <utility>
 #include <vector>
 
+enum AbstractShapeType { GeneralFrameObject, MeshTriangle, MeshObject };
+
 /**************************************************************
  * Encapsulation class for output of intersection routine
  ***************************************************************/
 struct IntersectionOut {
-    bool hit;            /**< Check if the ray hit*/
-    Vec3 normal;         /**< Normal vector at point of intersection */
-    float t;             /**< Distance traversed by light ray */
-    Vec3 point;          /**< Point of intersection of the light ray*/
-    Ray w0;              /**< Incoming light ray*/
-    mat_pointer hit_mat; /**< Material of hit object*/
+    bool hit;                  /**< Check if the ray hit*/
+    Vec3 normal;               /**< Normal vector at point of intersection */
+    float t;                   /**< Distance traversed by light ray */
+    Vec3 point;                /**< Point of intersection of the light ray*/
+    Ray w0;                    /**< Incoming light ray*/
+    AbstractMaterial *hit_mat; /**< Material of hit object*/
     IntersectionOut();
 };
 
@@ -26,6 +28,7 @@ struct IntersectionOut {
 struct AbstractShape {
     Frame frame; /**< Frame of the object*/
     mat_pointer material;
+    AbstractShapeType type = GeneralFrameObject;
     /***************************************************
      * @brief Common intersection routine for all shapes
      * @param ray Light ray to check in world space
@@ -33,6 +36,7 @@ struct AbstractShape {
      ***************************************************/
     IntersectionOut intersect(const Ray &ray);
     Vec3 get_normal(const Vec3 &point);
+    virtual ~AbstractShape() {}
 
   protected:
     /************************************************************************
@@ -46,11 +50,15 @@ struct AbstractShape {
     virtual Vec3 _get_normal(const Vec3 &point) = 0;
 };
 
-using obj_pointer = std::shared_ptr<AbstractShape>;
+using obj_pointer = std::unique_ptr<AbstractShape>;
 
 struct Triangle : AbstractShape {
     Vec3 v1, v2, v3; /**< Position vectors of triangle vertices*/
     Vec3 n;          /**< Normal vector of triangle*/
+    float h;         /**< Bound box checking heuristic*/
+    Vec3 centre;     /**< Centroid*/
+    Vec3 min;        /**< Min bounding box of triangle*/
+    Vec3 max;        /**< Max bounding box of triangle*/
 
     /******************************************
      * @brief Parametrized triangle constructor
@@ -110,5 +118,5 @@ struct Plane : AbstractShape {
  * @param v Vector of the objects to check
  * @param ray Ray to check with
  ******************************************************/
-std::pair<obj_pointer, IntersectionOut>
+std::pair<AbstractShape *, IntersectionOut>
 closestIntersect(const std::vector<obj_pointer> &v, const Ray &ray);

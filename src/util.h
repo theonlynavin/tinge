@@ -60,6 +60,24 @@ inline static Vec4 clamp(const Vec4 &v, const Vec4 &v_min, const Vec4 &v_max) {
     return Vec4(clamp(v.x, v_min.x, v_max.x), clamp(v.y, v_min.y, v_max.y),
                 clamp(v.z, v_min.z, v_max.z), clamp(v.w, v_min.w, v_max.w));
 }
+/**/
+/*inline static Vec3 min(Vec3 m, float x, float y, float z) {*/
+/*    return Vec3(m.x > x ? x : m.x, m.y > y ? y : m.y, m.z > z ? z : m.z);*/
+/*}*/
+/**/
+inline static Vec3 v_min(Vec3 m, Vec3 n) {
+    return Vec3(m.x > n.x ? n.x : m.x, m.y > n.y ? n.y : m.y,
+                m.z > n.z ? n.z : m.z);
+}
+
+/*inline static Vec3 max(Vec3 m, float x, float y, float z) {*/
+/*    return Vec3(m.x < x ? x : m.x, m.y < y ? y : m.y, m.z < z ? z : m.z);*/
+/*}*/
+/**/
+inline static Vec3 v_max(Vec3 m, Vec3 n) {
+    return Vec3(m.x < n.x ? n.x : m.x, m.y < n.y ? n.y : m.y,
+                m.z < n.z ? n.z : m.z);
+}
 
 // Utility operator overloading for printing vectors and matrices onto a stream
 
