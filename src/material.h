@@ -204,6 +204,12 @@ class MaterialTransmission : public AbstractMaterial {
             outward_normal = -n;
         }
 
+        
+        float p = fresnel(dot(wo.direction, -outward_normal), mu);
+        
+        if (random_gen.GenerateUniformFloat() < p)
+            return reflect(wo, at, outward_normal);
+
         return refract(wo, at, outward_normal, etai_over_etat);
     }
 };
@@ -215,7 +221,7 @@ class MaterialDielectric : public AbstractMaterial {
         float refractive_index;
         Vec3 specular_color;
         float roughness;
-        float s;
+        float s = 0.2;
     
         /***********************************
          * @brief Material Dielectric Constructor
@@ -249,8 +255,9 @@ class MaterialDielectric : public AbstractMaterial {
             return r0 + (1 - r0) * pow(1 - cos_theta, 5);
         }
         float GGX_D(float cos_thetah, float roughness) const {
-            float denom = (pow(cos_thetah, 2) * (pow(roughness, 2) - 1)) + 1;
-            float D = (pow(roughness, 2))/((pow(denom, 2))*(M_PI));
+            float a2 = roughness * roughness;
+            float denom = (cos_thetah * cos_thetah) * (a2 - 1) + 1;
+            float D = a2 / (denom * denom * M_PI);
             return D;
         }
         float Geometric_Attenuation(float cos_theta_in, float cos_theta_out,
@@ -264,16 +271,16 @@ class MaterialDielectric : public AbstractMaterial {
          * @return The combined reflected and transmitted color
          ***********************************/
         Vec3 Fr(const Ray &wi, const Ray &wo, Vec3 n) const override {
-            float cos_theta_out = clamp(dot(n, wo.direction), 0.0f, 1.0f);
+            float cos_theta_out = clamp(dot(n, -wo.direction), 0.0f, 1.0f);
             float cos_theta_in = clamp(dot(n, wi.direction), 0.0f, 1.0f);
 
-            Vec3 temp = wi.direction+wo.direction;
+            Vec3 temp = wi.direction - wo.direction;
             Vec3 h = normalize(temp);
 
-            float wo_dot_h = clamp(dot(wo.direction, h), 0.0f, 1.0f);
+            float wo_dot_h = clamp(dot(-wo.direction, h), 0.0f, 1.0f);
             float n_dot_h = clamp(dot(n, h), 0.0f, 1.0f);
 
-            float D = GGX_D(n_dot_h, roughness);
+            float D = GGX_D(n_dot_h, clamp(roughness, 1e-5f, 1));
             float G = Geometric_Attenuation(cos_theta_in, cos_theta_out, n_dot_h, wo_dot_h);
             float F = Fresnel(wo_dot_h, refractive_index);
 
