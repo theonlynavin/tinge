@@ -6,18 +6,20 @@
 #include <iostream>
 #include <time.h>
 
-#define WIDTH 192*5
-#define HEIGHT 108*5
+#define WIDTH 192*2
+#define HEIGHT 108*2
 
 int main() {
     std::cout << "Hello there!" << std::endl;
 
     Camera camera = Camera(M_PI_2, WIDTH, HEIGHT, 10, 0.1);
-    camera.look_at(Vec3(1, 0.5, 1), Vec3(0, 0, -4));
+    camera.look_at(Vec3(1, 4, 3), Vec3(0, 0, -4));
 
     std::vector<obj_pointer> shapes;
     // Populate scene
     generate_scene(shapes);
+
+    Renderer::env_map("E:/HDRi/hansaplatz_4k.hdr");
 
     // Begin timer and start render
     auto start = std::chrono::high_resolution_clock::now();

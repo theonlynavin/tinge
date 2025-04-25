@@ -290,7 +290,7 @@ class MaterialDielectric : public AbstractMaterial {
     
             // Diffuse component
             Vec3 diffuse = color * (1.0f - F) * clamp(dot(wi.direction, n), 0, 1);
-    
+
             return diffuse + specular;
         }
     
@@ -305,7 +305,7 @@ class MaterialDielectric : public AbstractMaterial {
         Ray sample_wi(const Ray &wo, const Vec3 &at, const Vec3 &n, Random &random_gen) override {
             float cos_theta = clamp(dot(wo.direction, n), -1.0f, 1.0f);
             float F = Fresnel(fabs(cos_theta), refractive_index);
-    
+
             if (random_gen.GenerateUniformFloat() < F) {
                 // Reflect the ray
                 return reflect(wo, at, n);

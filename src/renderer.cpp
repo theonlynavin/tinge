@@ -51,7 +51,7 @@ Vec3 sample_env_map(const Vec3& dir) {
 
     int index = (y * env_width + x) * env_channels; //index in env_data 
 
-    return Vec3(env_data[index], env_data[index + 1], env_data[index + 2]);
+    return Vec3(env_data[index], env_data[index + 1], env_data[index + 2]) * 0.2;
   
 }
 
@@ -153,7 +153,7 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
     Random random_generator = Random(time(nullptr));
 
     if(env_light){
-        std::string envmap_file_path = "envmap.hdr";  
+        std::string envmap_file_path = "E:/HDRi/paul_lobe_haus_8k.hdr";  
         Renderer::env_map(envmap_file_path);
     }
 
@@ -165,7 +165,7 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
     std::vector<std::thread> threads;
     int N = 10;
     threads.reserve(N);
-    int num_samples = 30, depth = 4;
+    int num_samples = 300, depth = 4;
 
     // Each thread renders 1/10th width of scene
     for (int i = 0; i < N; i++) {
@@ -232,13 +232,15 @@ Vec3 Renderer::illuminance(const IntersectionOut &surface, int max_depth,
     // TODO: Try using approximated variance to calculate
     //
     // Use larger number of samples to remove "sparkles"
-    float p = std::max(Fr.x, std::max(Fr.y, Fr.z));
+    float p = 1;
+    //clamp(std::max(Fr.x, std::max(Fr.y, Fr.z)), 0.01, 1);
+
+    if (random_generator.GenerateUniformFloat() > p)
+        return Vec3(0,0,0);
 
     // Calculate luminance of hit point else assume no light
     if (details.hit) {
         // Darker light -> More chance of skipping
-        if (random_generator.GenerateUniformFloat() > p)
-            return Le;
         Li = illuminance(details, max_depth - 1, shapes, random_generator);
     }
     else

@@ -7,7 +7,7 @@
 void generate_scene(std::vector<obj_pointer> &shapes) {
   
     //sets up the backwall which is an emissive rectangle consisting of two triangle shapes having a common side
-    mat_pointer emmisive = std::make_shared<MaterialEmissive>(Vec3(1, 1, 1), 8);
+    mat_pointer emmisive = std::make_shared<MaterialEmissive>(Vec3(1, 1, 1), 1.8);
     obj_pointer back_wall_1 = std::make_shared<Triangle>(
         Vec3(-3.5, -2, 0), Vec3(3.5, 2, 0), Vec3(-3.5, 2, 0), emmisive);
     obj_pointer back_wall_2 = std::make_shared<Triangle>(
@@ -100,8 +100,11 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     shapes.push_back(bottom_wall_1);
     shapes.push_back(bottom_wall_2);
   
-    mat_pointer glass = std::make_shared<MaterialTransmission>(Vec3(1, 1, 1), 1.5);
+    mat_pointer glass = std::make_shared<MaterialDielectric>(Vec3(1, 1, 1), Vec3(1, 1, 1), 1.5, 0);
 
+    mat_pointer plastic = std::make_shared<MaterialDielectric>(Vec3(0.8, 0.2, 0.3), Vec3(0.8, 0.2, 0.3), 1.2, 0.2);
+
+    
     mat_pointer metal_ball =
        std::make_shared<MaterialMetallic>(Vec3(.6, .6, .6), 0);
     obj_pointer ball =
@@ -113,9 +116,9 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
   
     //setups the sphere which is transmissive
     obj_pointer sphere = std::make_shared<Sphere>(
-        Vec3(0,0,-5), 0.6, metal_ball);
+        Vec3(0,0,-5), 0.6, glass);
     
-    shapes.push_back(sphere);
+    //shapes.push_back(sphere);
 
     mat_pointer light_ball =
         std::make_shared<MaterialEmissive>(Vec3(.9, .9, .1), 4);
