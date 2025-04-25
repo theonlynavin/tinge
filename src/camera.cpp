@@ -26,10 +26,11 @@ Vec3 Ray::at(float t) const {
 
 /***************
  * parameterized constructor for class Camera 
- * @par Field of view which is basically theta we used in calculation
- * @par film width
- * @par film height
- * @par focal length 
+ * @par film-height : It is the vertical measurement of the film 
+ * @par film-width : It is the horizontal measurement of the film 
+ * @par focal length : Focal length of the aperture of camera 
+ * @par vertical_fov : It is the extent of observable world expressend in terms of vertical angle (in radians)
+ * @par aperture_size : Radius of the aperture of camera 
  ******************/
 Camera ::Camera(float vertical_fov, int film_width, int film_height,
                 float focal_length, float aperture_size)
@@ -44,7 +45,8 @@ Camera ::~Camera() {}
 
 /********************
  * Given NDC coordinates (u, v), should generate the corresponding ray
- * @par NDC coordinates of a point 
+ * @par (u,v) NDC coordinates of a point 
+ * @par random_gen : member function of class Random 
  * @return Corresponding ray to that point 
  */
 

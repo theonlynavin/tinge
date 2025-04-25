@@ -10,9 +10,8 @@ struct Ray {
     Vec3 direction;
 
     Ray();
-/**************
- *  Parameterized constructor
- ************/ 
+    
+
     Ray(Vec3 origin, Vec3 direction);
     // Direction must be normalized while taking in
 /*************
@@ -23,9 +22,9 @@ struct Ray {
 };
 /********
  * Generates reflected ray given a ray , normal and the point of incident
- * @par incident ray
- * @par incident point 
- * @par normal ray 
+ * @param incident ray
+ * @param incident point 
+ * @param normal ray 
  * @return reflected ray 
  */
 static inline Ray reflect(const Ray& in, const Vec3& at, const Vec3& n)
@@ -34,9 +33,9 @@ static inline Ray reflect(const Ray& in, const Vec3& at, const Vec3& n)
 }
 /********
  * Generates refracted ray given a ray , normal , the point of incident and relative refractive index (named badly as eta1_eta2)
- * @par incident ray
- * @par incident point 
- * @par normal ray 
+ * @param incident ray
+ * @param incident point 
+ * @param normal ray 
  * @return refracted ray 
  */
 static inline Ray refract(const Ray& in, const Vec3& at, const Vec3& n, float eta1_eta2)
@@ -58,6 +57,11 @@ static inline Ray refract(const Ray& in, const Vec3& at, const Vec3& n, float et
 }
 /************************
  * A Camera class consisting film details and related functions
+ * @par film-height : It is the vertical measurement of the film 
+ * @par film-width : It is the horizontal measurement of the film 
+ * @par focal length : Focal length of the aperture of camera 
+ * @par vertical_fov : It is the extent of observable world expressend in terms of vertical angle (in radians)
+ * @par aperture_size : Radius of the aperture of camera 
  ************************/
 struct Camera {
     float vertical_fov;

@@ -62,3 +62,25 @@ Vec3 Random::GenerateUniformPointHemisphere(const Vec3 &n) {
 
     return ret * factor;
 }
+
+// Generate a random point on a hemisphere around a normal vector
+Vec3 Random::GenerateCosinePointHemisphere(const Vec3 &n) {
+    Vec3 ret = GenerateUniformPointDisc();
+    ret.z = std::sqrt(1 - dot(ret, ret));
+
+    float c1 = 1 / (1 + n.z);
+    float c2 = n.y * c1;
+    float c3 = n.x * c1;
+    Mat3 m{};
+    m[0][0] = 1 - n.x * c3;
+    m[0][1] = -n.x * c2;
+    m[0][2] = n.x;
+    m[1][0] = -n.x * c2;
+    m[1][1] = 1 - n.y * c2;
+    m[1][2] = n.y;
+    m[2][0] = -n.x;
+    m[2][1] = -n.y;
+    m[2][2] = n.z;
+
+    return m * ret;
+}

@@ -5,6 +5,7 @@
 #include "random.h"
 #include "util.h"
 #include <cmath>
+#include <algorithm>
 #include <memory>
 #include <ostream>
 
@@ -81,17 +82,19 @@ class MaterialDiffuse : public AbstractMaterial {
  * ***********************************/
 class MaterialEmissive : public AbstractMaterial {
   public:
+    float intensity = 1;
+
     /***********************************
      * @brief Material Emissive Constructor
      * @param color the color of the light emitted by the material
      ***********************************/
-    MaterialEmissive(const Vec3 &color) { this->color = color; }
+    MaterialEmissive(const Vec3 &color, float intensity) : intensity(intensity) { this->color = color; }
     // light observed because of emission
     /***********************************
      * @brief The light emitted by an emissive object
      * @return Vec 3 Color object which is the color of the light emitted
      ***********************************/
-    Vec3 Le(const Ray &wi, Vec3 x) const override { return color; }
+    Vec3 Le(const Ray &wi, Vec3 x) const override { return color * intensity; }
     // as, most of the emissive surfaces do not reflect
     /***********************************
      * @brief The light reflected in a particular direction by emissive material which is 0
@@ -204,5 +207,108 @@ class MaterialTransmission : public AbstractMaterial {
         return refract(wo, at, outward_normal, etai_over_etat);
     }
 };
+/***********************************
+ * A class for Dielectric Material (reflective and refractive based on Fresnel equations)
+ ***********************************/
+class MaterialDielectric : public AbstractMaterial {
+    public:
+        float refractive_index;
+        Vec3 specular_color;
+        float roughness;
+        float s;
+    
+        /***********************************
+         * @brief Material Dielectric Constructor
+         * @param color The diffuse color of the dielectric material
+         * @param specular_color The specular reflection color of the material
+         * @param refractive_index The refractive index of the material
+         * @param roughness Controls the microfacet roughness (0: smooth, 1: rough)
+         ***********************************/
+        MaterialDielectric(const Vec3 &color, const Vec3 &specular_color,
+                           float refractive_index, float roughness)
+            : refractive_index(refractive_index), specular_color(specular_color), roughness(roughness) {
+            this->color = color;
+        }
+    
+        /***********************************
+         * @brief The light emitted by a dielectric material
+         * @return Returns Zero Vector as dielectric materials emit no light
+         ***********************************/
+        Vec3 Le(const Ray &wi, Vec3 x) const override {
+            return Vec3(0, 0, 0);
+        }
+    
+        /***********************************
+         * @brief Compute the Fresnel term using Schlick's approximation
+         * @param cos_theta The cosine of the angle between incident light and surface normal
+         * @param refractive_index The refractive index of the dielectric material
+         * @return Fresnel reflectance value
+         ***********************************/
+        float Fresnel(float cos_theta, float refractive_index) const {
+            float r0 = pow((1 - refractive_index) / (1 + refractive_index), 2);
+            return r0 + (1 - r0) * pow(1 - cos_theta, 5);
+        }
+        float GGX_D(float cos_thetah, float roughness) const {
+            float denom = (pow(cos_thetah, 2) * (pow(roughness, 2) - 1)) + 1;
+            float D = (pow(roughness, 2))/((pow(denom, 2))*(M_PI));
+            return D;
+        }
+        float Geometric_Attenuation(float cos_theta_in, float cos_theta_out,
+             float n_dot_h, float wo_dot_h) const {
+            float second = (2*(n_dot_h)*(cos_theta_out))/(wo_dot_h);
+            float third = (2*(n_dot_h)*(cos_theta_in))/(wo_dot_h);
+            return std::min(1.0f, std::min(second, third));
+        }
+        /***********************************
+         * @brief The Cook-Torrance BRDF function for dielectric materials
+         * @return The combined reflected and transmitted color
+         ***********************************/
+        Vec3 Fr(const Ray &wi, const Ray &wo, Vec3 n) const override {
+            float cos_theta_out = clamp(dot(n, wo.direction), 0.0f, 1.0f);
+            float cos_theta_in = clamp(dot(n, wi.direction), 0.0f, 1.0f);
+
+            Vec3 temp = wi.direction+wo.direction;
+            Vec3 h = normalize(temp);
+
+            float wo_dot_h = clamp(dot(wo.direction, h), 0.0f, 1.0f);
+            float n_dot_h = clamp(dot(n, h), 0.0f, 1.0f);
+
+            float D = GGX_D(n_dot_h, roughness);
+            float G = Geometric_Attenuation(cos_theta_in, cos_theta_out, n_dot_h, wo_dot_h);
+            float F = Fresnel(wo_dot_h, refractive_index);
+
+            // Specular reflection based on microfacet model
+
+            Vec3 specular = specular_color * ((D * G * F)/(cos_theta_in * cos_theta_out * 4));
+    
+            // Diffuse component
+            Vec3 diffuse = color * (1.0f - F) * clamp(dot(wi.direction, n), 0, 1);
+    
+            return diffuse + specular;
+        }
+    
+        /***********************************
+         * @brief Sample reflection or refraction based on Fresnel term
+         * @param wo The outgoing ray
+         * @param at The intersection point
+         * @param n The surface normal
+         * @param random_gen Random number generator
+         * @return A reflected or refracted ray
+         ***********************************/
+        Ray sample_wi(const Ray &wo, const Vec3 &at, const Vec3 &n, Random &random_gen) override {
+            float cos_theta = clamp(dot(wo.direction, n), -1.0f, 1.0f);
+            float F = Fresnel(fabs(cos_theta), refractive_index);
+    
+            if (random_gen.GenerateUniformFloat() < F) {
+                // Reflect the ray
+                return reflect(wo, at, n);
+            } else {
+                // Refract the ray
+                float eta = (cos_theta > 0) ? refractive_index : 1.0f / refractive_index;
+                Vec3 outward_normal = (cos_theta > 0) ? -n : n;
+                return refract(wo, at, outward_normal, eta);
+            }
+        }
+    };
 
 using mat_pointer = std::shared_ptr<AbstractMaterial>;
