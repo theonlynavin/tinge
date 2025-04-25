@@ -298,14 +298,31 @@ class MaterialDielectric : public AbstractMaterial {
     
             return diffuse + specular;
         }
-    
         /***********************************
-         * @brief No explicit sampling method provided for dielectric materials
-         *        Defaults to a placeholder (not implemented in this context)
+         * @brief Generates the rays reflected by the dielectric material
+         * @param wo the incoming ray direction
+         * @param at the point of incidence of the reflection, implemented to prevent floating point errors
+         * @param n the normal of the object
+         * @param random_gen random number generator 
+         * @return The direction of the ray reflected
          ***********************************/
-        Ray sample_wi(const Ray &wo, const Vec3 &at, const Vec3 &n, Random &r) override {
-            return Ray(); // Placeholder for specific reflection/refraction logic
-        }
-    };    
+       Ray sample_wi(const Ray &wo, const Vec3& at, const Vec3 &n, Random &random_gen) override {
+          float cos_theta = clamp(dot(wo.direction, n), 0.0f, 1.0f);
+          float F = Fresnel(cos_theta, refractive_index);
+
+        if (random_gen.GenerateUniformFloat() < s * F) {
+          // Importance sample half-vector h from GGX
+        Vec3 h = random_gen.GenerateImportanceSampleGGX(n, roughness); // You need to define this
+        Vec3 dir = reflect(-wo.direction, h); // Reflect wo about h
+        if (dot(dir, n) <= 0.0f) // Ensure valid reflection
+            return Ray(at, Vec3(0)); // Discard or return black ray
+
+            return Ray(at + dir * 1e-4f, dir);
+        }  else {
+            Vec3 dir = random_gen.GenerateCosineWeightedHemisphere(n); // Cosine-weighted sampling
+            return Ray(at + dir * 1e-4f, dir);
+          }
+      }
+  };    
 
     using mat_pointer = std::shared_ptr<AbstractMaterial>;
