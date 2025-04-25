@@ -2,9 +2,9 @@
 #include "camera.h"
 #include "material.h"
 #include "math.h"
+#include "util.h"
 #include <ctime>
 #include <iostream>
-#include <memory>
 #include <mutex>
 #include <ostream>
 #include <thread>
@@ -57,9 +57,17 @@ void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
                 IntersectionOut &details = hit.second;
 
                 if (details.hit == true) {
-                    color =
-                        color + Renderer::illuminance(details, depth, shapes,
-                                                      random_generator);
+                    if (SCENE_VIEW == 0) {
+                        color = color + Renderer::illuminance(details, depth,
+                                                              shapes,
+                                                              random_generator);
+                    } else {
+                        color =
+                            num_samples *
+                            mix(Vec3(1, 0, 0), Vec3(0, 1, 0),
+                                (1 + dot(details.normal, ray.direction)) / 2);
+                        break;
+                    }
                 } else {
                     color = color + mix(sky_white, sky_blue, v);
                     // color = color + Vec3(0, 0, 0);

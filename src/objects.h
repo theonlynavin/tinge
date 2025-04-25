@@ -57,6 +57,8 @@ struct Triangle : AbstractShape {
     Vec3 n;          /**< Normal vector of triangle*/
     float h;         /**< Bound box checking heuristic*/
     Vec3 centre;     /**< Centroid*/
+    Vec3 min;        /**< Min bounding box of triangle*/
+    Vec3 max;        /**< Max bounding box of triangle*/
 
     /******************************************
      * @brief Parametrized triangle constructor

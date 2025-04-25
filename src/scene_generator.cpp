@@ -9,16 +9,15 @@
 void generate_scene(std::vector<obj_pointer> &shapes) {
 
     mat_pointer mesh_mat =
-        std::make_shared<MaterialMetallic>(Vec3(.8, .8, .8), .6);
+        std::make_shared<MaterialMetallic>(Vec3(.8, .8, .9), .7);
     obj_pointer bbox =
-        std::make_unique<Mesh>("teapot.obj", mesh_mat, Vec3(0, -2, -5),
-                               2 * Vec3(0.01, 0.01, 0.01), Vec3(), 7);
+        std::make_unique<Mesh>("teapot.obj", mesh_mat, Vec3(0, -1.7, -5),
+                               2 * Vec3(0.01, 0.01, 0.01), Vec3(), 10);
     shapes.push_back(std::move(bbox));
 
     // sets up the backwall which is an emissive rectangle consisting of two
     // triangle shapes having a common side
-    mat_pointer emmisive =
-        std::make_shared<MaterialEmissive>(Vec3(1, 1, 1) * 10);
+    mat_pointer emmisive = std::make_shared<MaterialEmissive>(Vec3(1, 1, 1));
     obj_pointer back_wall_1 = std::make_unique<Triangle>(
         Vec3(-3.5, -2, 0), Vec3(3.5, 2, 0), Vec3(-3.5, 2, 0), emmisive);
     obj_pointer back_wall_2 = std::make_unique<Triangle>(
