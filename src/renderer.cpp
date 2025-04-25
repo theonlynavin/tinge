@@ -167,7 +167,7 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
     std::vector<std::thread> threads;
     int N = 10;
     threads.reserve(N);
-    int num_samples = 30, depth = 4;
+    int num_samples = 50, depth = 4;
 
     // Each thread renders 1/10th width of scene
     for (int i = 0; i < N; i++) {

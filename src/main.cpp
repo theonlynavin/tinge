@@ -6,8 +6,8 @@
 #include <iostream>
 #include <time.h>
 
-#define WIDTH 192 * 5
-#define HEIGHT 108 * 5
+#define WIDTH 1920
+#define HEIGHT 1080
 
 int main() {
     std::cout << "Hello there!" << std::endl;

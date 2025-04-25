@@ -13,12 +13,12 @@ enum AbstractShapeType { GeneralFrameObject, MeshTriangle, MeshObject };
  * Encapsulation class for output of intersection routine
  ***************************************************************/
 struct IntersectionOut {
-    bool hit;            /**< Check if the ray hit*/
-    Vec3 normal;         /**< Normal vector at point of intersection */
-    float t;             /**< Distance traversed by light ray */
-    Vec3 point;          /**< Point of intersection of the light ray*/
-    Ray w0;              /**< Incoming light ray*/
-    mat_pointer hit_mat; /**< Material of hit object*/
+    bool hit;                  /**< Check if the ray hit*/
+    Vec3 normal;               /**< Normal vector at point of intersection */
+    float t;                   /**< Distance traversed by light ray */
+    Vec3 point;                /**< Point of intersection of the light ray*/
+    Ray w0;                    /**< Incoming light ray*/
+    AbstractMaterial *hit_mat; /**< Material of hit object*/
     IntersectionOut();
 };
 
