@@ -12,20 +12,17 @@
 int main() {
     std::cout << "Hello there!" << std::endl;
 
-    // Set up the camera
-    Camera camera = Camera(M_PI_2, WIDTH, HEIGHT, 10, 0);
-    camera.look_at(Vec3(4, 3, 4)/2, Vec3(0, 0, -3));
-    
-    // Populate scene
+    // Set up the camera and the scene
+    Camera camera = Camera(M_PI_2, WIDTH, HEIGHT, 10, 0.05);
     std::vector<obj_pointer> shapes;
-    generate_scene(shapes, CORNELL);
+    generate_scene(camera, shapes, TEAPOT);
 
     // Load the environment map
     Renderer::env_map("assets/paul_lobe_haus_8k.hdr");
 
     // Begin timer and start render
     auto start = std::chrono::high_resolution_clock::now();
-    Renderer::render(camera, shapes, "test.png", WIDTH, HEIGHT, 200, true, false);
+    Renderer::render(camera, shapes, "teapot.png", WIDTH, HEIGHT, 100, true, false);
     auto stop = std::chrono::high_resolution_clock::now();
 
     std::cout << "\nRendered in: "

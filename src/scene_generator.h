@@ -10,4 +10,4 @@ enum Scene
     MONKEY
 };
 
-void generate_scene(std::vector<obj_pointer> &shapes, Scene kind);
+void generate_scene(Camera& cam, std::vector<obj_pointer> &shapes, Scene kind);

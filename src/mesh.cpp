@@ -14,8 +14,9 @@ Mesh::Mesh(const std::string &fname, mat_pointer material, Vec3 origin,
     root = std::make_unique<BVH_Node>();
     this->material = material;
 
+    std::cout << "[Mesh Loader] Loading mesh '" << fname << "'" << std::endl;
     objl::Loader Loader;
-    bool loadout = Loader.LoadFile("teapot.obj");
+    bool loadout = Loader.LoadFile(fname);
     Frame f;
     f.origin = origin;
     f.rotation = rotation;
@@ -41,8 +42,9 @@ Mesh::Mesh(const std::string &fname, mat_pointer material, Vec3 origin,
         }
     }
 
-    std::cout << root->volume.min << root->volume.max << std::endl;
+    std::cout << "[BVH] Constructed mesh bounds " << root->volume.min << root->volume.max << std::endl;
     split(root, bvh_height);
+    std::cout << "[Mesh Loader] Finished loading." << std::endl;
 }
 
 bool traverse(const std::unique_ptr<BVH_Node> &root, const Ray &ray,
