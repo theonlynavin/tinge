@@ -10,7 +10,7 @@ Showcase of our renders
 <img alt="Material render 1" src="./showcase/test_5_10.png">
 <img alt="Material render 2" src="./showcase/colour_box_1.png">
 <img alt="Material render 3" src="./showcase/metal_ball.png">
-<img alt="Mesh render 1" src="./showcase/teapot.png">
+<img alt="Mesh render 1" src="./showcase/teapot_dark.png">
 
 * Renders 3D scenes using ray tracing.
 * Supports spheres, planes, triangles.
@@ -20,10 +20,17 @@ Showcase of our renders
 
 Rays are generated from a virtual camera. Each ray is traced into the 3D scene. If it hits an object, its material defines the behavior:
 
-- Diffuse: scattered reflection
-- Metallic: specular reflection
-- Transmission: refracted rays
-- Emissive: light emission
+- Diffuse: Equal reflection in all directions 
+- Metallic: Emits no light of its own, has probability p to act as diffuse or reflective
+- Transmission: Purely transmissive, Schlick's approximation ignored 
+- Emissive: Material is considered not to reflect and purely emit
+- Dielectric: Reflective and Refractive based on Fresnel's Equations
+
+There are intersection schemes for different shapes, based on which intersection is determined. Further, for more complex shapes, they can be represented as a collection of triangles. The complex shape can be bounded by a box and intersection can be checked for if the ray intersects the bounding box. Further, we also have to take care that we don't accept an intersection that happpens in the backward direction. 
+
+- Plane: Check if 't' (Ray parameter) at point of intersection is positive or not.
+- Sphere: Check distance from ray origin to point of intersection.
+- Triangle: Möller–Trumbore Algorithm 
 
 The process recurses with new rays (path tracing).
 Color contributions accumulate per pixel.
@@ -41,22 +48,20 @@ You can create your own 3D models using Blender or any other 3D modelling softwa
 
 2. Export as `.obj`
 
-In Blender:
-
-1. Select the object(s) you want to export.
-2. Go to `File → Export → Wavefront (.obj)`
-3. Use these recommended export settings:
+- In Blender, select the object(s) you want to export.
+- Go to `File → Export → Wavefront (.obj)`
+- Use these recommended export settings:
    - Selection Only** 
    - Include Normals**
    - Objects as OBJ Objects**
 
-This will generate:
-- `your_model.obj` — contains your model’s vertex positions, normals, and faces.
+- This will generate:
+   - `your_model.obj` — contains your model’s vertex positions, normals, and faces.
 
 3. Add the Model to Your Tinge Project
 
-* Place your `.obj` file inside the Tinge folder
-* Modify the code in the file scene_generator.cpp to set up the scene that you wish to render
+- Place your `.obj` file inside the Tinge folder
+- Modify the code in the file scene_generator.cpp to set up the scene that you wish to render
 
 
 ## ENVIRONMENT REQUIREMENTS
