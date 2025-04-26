@@ -6,19 +6,13 @@
 #include <iostream>
 #include <memory>
 
-void generate_scene(std::vector<obj_pointer> &shapes) {
-
-  mat_pointer mesh_mat =
-        std::make_shared<MaterialMetallic>(Vec3(.8, .8, .9), .7);
-    obj_pointer bbox =
-        std::make_unique<Mesh>("teapot.obj", mesh_mat, Vec3(0, -1.7, -5),
-                               2 * Vec3(0.01, 0.01, 0.01), Vec3(), 10);
-    shapes.push_back(std::move(bbox));
-
+// A cornell box like scene with a glassy ball
+void generate_scene1(std::vector<obj_pointer> &shapes)
+{
     // sets up the backwall which is an emissive rectangle consisting of two
     // triangle shapes having a common side
     mat_pointer emmisive =
-        std::make_shared<MaterialEmissive>(Vec3(1, 1, 1), 0.4);
+        std::make_shared<MaterialEmissive>(Vec3(1, 1, 1), 4);
     obj_pointer back_wall_1 = std::make_unique<Triangle>(
         Vec3(-3.5, -2, 0), Vec3(3.5, 2, 0), Vec3(-3.5, 2, 0), emmisive);
     obj_pointer back_wall_2 = std::make_unique<Triangle>(
@@ -27,10 +21,11 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     back_wall_1->frame.lockFrame();
     back_wall_2->frame.origin.z = -7;
     back_wall_2->frame.lockFrame();
-
     shapes.push_back(std::move(back_wall_1));
     shapes.push_back(std::move(back_wall_2));
 
+    // sets up the frontwall which is a fully black rectangle consisting of two
+    // triangle shapes having a common side
     mat_pointer emmisive_ =
         std::make_shared<MaterialEmissive>(Vec3(0, 0, 0), 1);
     obj_pointer front_wall_1 = std::make_unique<Triangle>(
@@ -115,29 +110,58 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     bottom_wall_2->frame.lockFrame();
     shapes.push_back(std::move(bottom_wall_1));
     shapes.push_back(std::move(bottom_wall_2));
-  
-    mat_pointer glass = std::make_shared<MaterialDielectric>(Vec3(1, 1, 1), Vec3(1, 1, 1), 1.5, 0);
 
-    mat_pointer plastic = std::make_shared<MaterialDielectric>(Vec3(0.8, 0.2, 0.3), Vec3(0.8, 0.2, 0.3), 1.2, 0.2);
-
-    
-    mat_pointer metal_ball =
-       std::make_shared<MaterialMetallic>(Vec3(.6, .6, .6), 0);
+    mat_pointer glass = std::make_shared<MaterialTransmission>(Vec3(1, 1, 1), 1.5);
     obj_pointer ball =
-        std::make_shared<Sphere>(Vec3(0, 1.2, 0), 1.2, glass);
-    ball->frame.origin.z = -3;
+        std::make_unique<Sphere>(Vec3(0, 1.2, 0), 1.2, glass);
+    ball->frame.origin.z = -5;
     ball->frame.origin.y = -2;
     ball->frame.lockFrame();
-    shapes.push_back(ball);
-  
-    //setups the sphere which is transmissive
-    obj_pointer sphere = std::make_shared<Sphere>(
-        Vec3(0,0,-5), 0.6, glass);
-    
-    //shapes.push_back(sphere);
+    shapes.push_back(std::move(ball));
+}
+
+// A open scene with a teapot and a glassy box
+void generate_scene2(std::vector<obj_pointer> &shapes)
+{
+    // sets up a metallic teapot
+    mat_pointer mesh_mat =
+        std::make_shared<MaterialMetallic>(Vec3(.8, .8, .9), .7);
+    obj_pointer bbox =
+        std::make_unique<Mesh>("assets/teapot.obj", mesh_mat, Vec3(0, -1.7, -2),
+                               2 * Vec3(0.01, 0.01, 0.01), Vec3(), 10);
+    shapes.push_back(std::move(bbox));
+
+    // setups the bottom wall which a diffuse material rectangle consisting of
+    // two triangle shapes having a common side
+    mat_pointer bottom_wall_mat =
+        std::make_shared<MaterialDiffuse>(Vec3(.1, .1, .9));
+    obj_pointer bottom_wall_1 = std::make_unique<Triangle>(
+        Vec3(0, 0, 0), Vec3(7, 0, 7), Vec3(7, 0, 0), bottom_wall_mat);
+    obj_pointer bottom_wall_2 = std::make_unique<Triangle>(
+        Vec3(0, 0, 0), Vec3(0, 0, 7), Vec3(7, 0, 7), bottom_wall_mat);
+    bottom_wall_1->frame.origin.x = -3.5;
+    bottom_wall_1->frame.origin.y = -2;
+    bottom_wall_1->frame.origin.z = -7;
+    bottom_wall_1->frame.lockFrame();
+    bottom_wall_2->frame.origin.x = -3.5;
+    bottom_wall_2->frame.origin.y = -2;
+    bottom_wall_2->frame.origin.z = -7;
+    bottom_wall_2->frame.lockFrame();
+    shapes.push_back(std::move(bottom_wall_1));
+    shapes.push_back(std::move(bottom_wall_2));
+
+    mat_pointer glass = std::make_shared<MaterialTransmission>(Vec3(1, 1, 1), 1.5);
+    mat_pointer metal_ball =
+        std::make_shared<MaterialMetallic>(Vec3(.6, .6, .6), 0);
+    obj_pointer ball =
+        std::make_unique<Sphere>(Vec3(0, 1.2, 0), 1.2, glass);
+    ball->frame.origin.z = -5;
+    ball->frame.origin.y = -2;
+    ball->frame.lockFrame();
+    shapes.push_back(std::move(ball));
 
     mat_pointer light_ball =
-        std::make_shared<MaterialEmissive>(Vec3(.9, .9, .1), 1);
+        std::make_shared<MaterialEmissive>(Vec3(.9, .9, .1), 4);
     obj_pointer lball1 =
         std::make_unique<Sphere>(Vec3(0, 0, 0), 0.6, light_ball);
     lball1->frame.origin.z = -5;
@@ -161,6 +185,82 @@ void generate_scene(std::vector<obj_pointer> &shapes) {
     lball3->frame.origin.x = 2.3;
     lball3->frame.lockFrame();
     shapes.push_back(std::move(lball3));
+}
 
-    std::cout << "Scene Generation complete" << std::endl;
+// A open scene with a teapot and a glassy box
+void generate_scene3(std::vector<obj_pointer> &shapes)
+{
+    // sets up a metallic teapot
+    mat_pointer mesh_mat =
+        std::make_shared<MaterialTransmission>(Vec3(.8, .8, .9), 1.4);
+    obj_pointer bbox =
+        std::make_unique<Mesh>("assets/monkey.obj", mesh_mat, Vec3(0, -1.7, -2),
+                               2 * Vec3(0.01, 0.01, 0.01), Vec3(), 10);
+    shapes.push_back(std::move(bbox));
+
+    // setups the bottom wall which a diffuse material rectangle consisting of
+    // two triangle shapes having a common side
+    mat_pointer bottom_wall_mat =
+        std::make_shared<MaterialDiffuse>(Vec3(.9, .1, .1));
+    obj_pointer bottom_wall_1 = std::make_unique<Triangle>(
+        Vec3(0, 0, 0), Vec3(7, 0, 7), Vec3(7, 0, 0), bottom_wall_mat);
+    obj_pointer bottom_wall_2 = std::make_unique<Triangle>(
+        Vec3(0, 0, 0), Vec3(0, 0, 7), Vec3(7, 0, 7), bottom_wall_mat);
+    bottom_wall_1->frame.origin.x = -3.5;
+    bottom_wall_1->frame.origin.y = -2;
+    bottom_wall_1->frame.origin.z = -7;
+    bottom_wall_1->frame.lockFrame();
+    bottom_wall_2->frame.origin.x = -3.5;
+    bottom_wall_2->frame.origin.y = -2;
+    bottom_wall_2->frame.origin.z = -7;
+    bottom_wall_2->frame.lockFrame();
+    shapes.push_back(std::move(bottom_wall_1));
+    shapes.push_back(std::move(bottom_wall_2));
+
+    mat_pointer glass = std::make_shared<MaterialTransmission>(Vec3(1, 1, 1), 1.5);
+    mat_pointer metal_ball =
+        std::make_shared<MaterialMetallic>(Vec3(.6, .6, .6), 0);
+    obj_pointer ball =
+        std::make_unique<Sphere>(Vec3(0, 1.2, 0), 1.2, glass);
+    ball->frame.origin.z = -5;
+    ball->frame.origin.y = -2;
+    ball->frame.lockFrame();
+    shapes.push_back(std::move(ball));
+
+    mat_pointer light_ball =
+        std::make_shared<MaterialEmissive>(Vec3(.9, .9, .1), 4);
+    obj_pointer lball1 =
+        std::make_unique<Sphere>(Vec3(0, 0, 0), 0.6, light_ball);
+    lball1->frame.origin.z = -5;
+    lball1->frame.origin.y = 1.5;
+    lball1->frame.origin.x = 1;
+    lball1->frame.lockFrame();
+    shapes.push_back(std::move(lball1));
+
+    obj_pointer lball2 =
+        std::make_unique<Sphere>(Vec3(0, 0, 0), 0.6, light_ball);
+    lball2->frame.origin.z = -5;
+    lball2->frame.origin.y = -0.3;
+    lball2->frame.origin.x = -3;
+    lball2->frame.lockFrame();
+    shapes.push_back(std::move(lball2));
+
+    obj_pointer lball3 =
+        std::make_unique<Sphere>(Vec3(0, 0, 0), 0.3, light_ball);
+    lball3->frame.origin.z = -4;
+    lball3->frame.origin.y = -1.6;
+    lball3->frame.origin.x = 2.3;
+    lball3->frame.lockFrame();
+    shapes.push_back(std::move(lball3));
+}
+
+void generate_scene(std::vector<obj_pointer> &shapes, Scene scene)
+{
+    if (scene == CORNELL)
+        generate_scene1(shapes);
+    if (scene == TEAPOT)
+        generate_scene2(shapes);
+    if (scene == MONKEY)
+        generate_scene3(shapes);
+    std::cout << "[Tinge] Scene Generation complete" << std::endl;
 }

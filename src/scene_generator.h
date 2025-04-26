@@ -2,4 +2,12 @@
 
 #include "objects.h"
 #include <vector>
-void generate_scene(std::vector<obj_pointer> &shapes);
+
+enum Scene
+{
+    CORNELL,
+    TEAPOT,
+    MONKEY
+};
+
+void generate_scene(std::vector<obj_pointer> &shapes, Scene kind);
