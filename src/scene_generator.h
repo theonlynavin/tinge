@@ -3,11 +3,12 @@
 #include "objects.h"
 #include <vector>
 
-enum Scene
+enum struct Scene
 {
     CORNELL,
     TEAPOT,
-    MONKEY
+    MONKEY,
+    COLOR_BOX
 };
 
 void generate_scene(Camera& cam, std::vector<obj_pointer> &shapes, Scene kind);

@@ -410,22 +410,141 @@ void generate_scene3(std::vector<obj_pointer> &shapes)
     shapes.push_back(std::move(lball3));
 }
 
+// The old color box scene
+void generate_scene4(std::vector<obj_pointer> &shapes)
+{
+    // sets up the backwall which is an emissive rectangle consisting of two
+    // triangle shapes having a common side
+    mat_pointer emmisive =
+        std::make_shared<MaterialEmissive>(Vec3(1, 1, 1), 1.5);
+    obj_pointer back_wall_1 = std::make_unique<Triangle>(
+        Vec3(-3.5, -2, 0), Vec3(3.5, 2, 0), Vec3(-3.5, 2, 0), emmisive);
+    obj_pointer back_wall_2 = std::make_unique<Triangle>(
+        Vec3(-3.5, -2, 0), Vec3(3.5, -2, 0), Vec3(3.5, 2, 0), emmisive);
+    back_wall_1->frame.origin.z = -7;
+    back_wall_1->frame.lockFrame();
+    back_wall_2->frame.origin.z = -7;
+    back_wall_2->frame.lockFrame();
+    shapes.push_back(std::move(back_wall_1));
+    shapes.push_back(std::move(back_wall_2));
+
+    // sets up the frontwall which is a fully black rectangle consisting of two
+    // triangle shapes having a common side
+    mat_pointer emmisive_ =
+        std::make_shared<MaterialEmissive>(Vec3(0, 0, 0), 1);
+    obj_pointer front_wall_1 = std::make_unique<Triangle>(
+        Vec3(3.5, 2, 0), Vec3(-3.5, -2, 0), Vec3(-3.5, 2, 0), emmisive_);
+    obj_pointer front_wall_2 = std::make_unique<Triangle>(
+        Vec3(3.5, -2, 0), Vec3(-3.5, -2, 0), Vec3(3.5, 2, 0), emmisive_);
+    front_wall_1->frame.origin.z = 0;
+    front_wall_1->frame.lockFrame();
+    front_wall_2->frame.origin.z = 0;
+    front_wall_2->frame.lockFrame();
+    shapes.push_back(std::move(front_wall_1));
+    shapes.push_back(std::move(front_wall_2));
+
+    // setups the right side wall which a diffuse material rectangle consisting
+    // of two triangle shapes having a common side
+    mat_pointer right_wall_mat =
+        std::make_shared<MaterialDiffuse>(Vec3(.9, .1, .1));
+    obj_pointer right_wall_1 = std::make_unique<Triangle>(
+        Vec3(0, 0, 0), Vec3(0, 4, -7), Vec3(0, 0, -7), right_wall_mat);
+    obj_pointer right_wall_2 = std::make_unique<Triangle>(
+        Vec3(0, 0, 0), Vec3(0, 4, 0), Vec3(0, 4, -7), right_wall_mat);
+    right_wall_1->frame.origin.x = 3.5;
+    right_wall_1->frame.origin.y = -2;
+    right_wall_1->frame.lockFrame();
+    right_wall_2->frame.origin.x = 3.5;
+    right_wall_2->frame.origin.y = -2;
+    right_wall_2->frame.lockFrame();
+    shapes.push_back(std::move(right_wall_1));
+    shapes.push_back(std::move(right_wall_2));
+
+    // setups the left side wall which a diffuse material rectangle consisting
+    // of two triangle shapes having a common side
+    mat_pointer left_wall_mat =
+        std::make_shared<MaterialDiffuse>(Vec3(.1, .9, .1));
+    obj_pointer left_wall_1 = std::make_unique<Triangle>(
+        Vec3(0, 0, 0), Vec3(0, 0, -7), Vec3(0, 4, -7), left_wall_mat);
+    obj_pointer left_wall_2 = std::make_unique<Triangle>(
+        Vec3(0, 0, 0), Vec3(0, 4, -7), Vec3(0, 4, 0), left_wall_mat);
+    left_wall_1->frame.origin.x = -3.5;
+    left_wall_1->frame.origin.y = -2;
+    left_wall_1->frame.lockFrame();
+    left_wall_2->frame.origin.x = -3.5;
+    left_wall_2->frame.origin.y = -2;
+    left_wall_2->frame.lockFrame();
+    shapes.push_back(std::move(left_wall_1));
+    shapes.push_back(std::move(left_wall_2));
+
+    // setups the top wall which a diffuse material rectangle consisting of two
+    // triangle shapes having a common side
+    mat_pointer top_wall_mat =
+        std::make_shared<MaterialDiffuse>(Vec3(1, .7, .1));
+    obj_pointer top_wall_1 = std::make_unique<Triangle>(
+        Vec3(0, 0, 0), Vec3(7, 0, 0), Vec3(7, 0, 7), top_wall_mat);
+    obj_pointer top_wall_2 = std::make_unique<Triangle>(
+        Vec3(0, 0, 0), Vec3(7, 0, 7), Vec3(0, 0, 7), top_wall_mat);
+    top_wall_1->frame.origin.x = -3.5;
+    top_wall_1->frame.origin.y = 2;
+    top_wall_1->frame.origin.z = -7;
+    top_wall_1->frame.lockFrame();
+    top_wall_2->frame.origin.x = -3.5;
+    top_wall_2->frame.origin.y = 2;
+    top_wall_2->frame.origin.z = -7;
+    top_wall_2->frame.lockFrame();
+    shapes.push_back(std::move(top_wall_1));
+    shapes.push_back(std::move(top_wall_2));
+
+    // setups the bottom wall which a diffuse material rectangle consisting of
+    // two triangle shapes having a common side
+    mat_pointer bottom_wall_mat =
+        std::make_shared<MaterialDiffuse>(Vec3(.1, .1, .9));
+    obj_pointer bottom_wall_1 = std::make_unique<Triangle>(
+        Vec3(0, 0, 0), Vec3(7, 0, 7), Vec3(7, 0, 0), bottom_wall_mat);
+    obj_pointer bottom_wall_2 = std::make_unique<Triangle>(
+        Vec3(0, 0, 0), Vec3(0, 0, 7), Vec3(7, 0, 7), bottom_wall_mat);
+    bottom_wall_1->frame.origin.x = -3.5;
+    bottom_wall_1->frame.origin.y = -2;
+    bottom_wall_1->frame.origin.z = -7;
+    bottom_wall_1->frame.lockFrame();
+    bottom_wall_2->frame.origin.x = -3.5;
+    bottom_wall_2->frame.origin.y = -2;
+    bottom_wall_2->frame.origin.z = -7;
+    bottom_wall_2->frame.lockFrame();
+    shapes.push_back(std::move(bottom_wall_1));
+    shapes.push_back(std::move(bottom_wall_2));
+
+    mat_pointer metal = std::make_shared<MaterialMetallic>(Vec3(.8, .8, .9), .07);
+    obj_pointer ball =
+        std::make_unique<Sphere>(Vec3(0, 1.2, 0), 1.8, metal);
+    ball->frame.origin.z = -5;
+    ball->frame.origin.y = -2;
+    ball->frame.lockFrame();
+    shapes.push_back(std::move(ball));
+}
+
 void generate_scene(Camera& cam, std::vector<obj_pointer> &shapes, Scene scene)
 {
-    if (scene == CORNELL)
+    if (scene == Scene::CORNELL)
     {
         cam.look_at(Vec3(0, 0.3, -0.1), Vec3(0, 0, -3));
         generate_scene1(shapes);
     }
-    if (scene == TEAPOT)
+    else if (scene == Scene::TEAPOT)
     {
         cam.look_at(Vec3(1, 1.5, 2), Vec3(0, 0, -3));
         generate_scene2(shapes);
     }
-    if (scene == MONKEY)
+    else if (scene == Scene::MONKEY)
     {
         cam.look_at(Vec3(1, 1.5, 3), Vec3(0, 0, 0));
         generate_scene3(shapes);
+    }
+    else if (scene == Scene::COLOR_BOX)
+    {
+        cam.look_at(Vec3(0, 0.3, -0.1), Vec3(0, 0, -3));
+        generate_scene4(shapes);
     }
     std::cout << "[Tinge] Scene Generation complete" << std::endl;
 }
