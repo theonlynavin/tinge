@@ -18,14 +18,14 @@ class Random {
     Random(unsigned int seed);
 
     /**************************************************************
-     * Generate a uniform float in [0, 1)
+     * Generates a uniform float in [0, 1)
      * @return A random float in [0, 1) with uniform distribution
      ***************************************************************/
     double GenerateUniformFloat();
 
     /*****************************************
-     * Generate a random point in a unit disc
-     * @return A random point in the unit disc
+     * Generates a random point in a unit disc
+     * @return A random point in the unit disc as (x, y, 0)
      *****************************************/
     Vec3 GenerateUniformPointDisc();
 

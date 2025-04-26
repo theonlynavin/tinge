@@ -18,6 +18,7 @@ struct Mesh : AbstractShape {
      * @param scale Scale of frame
      * @param rotation Rotation of frame
      * @param bvh_height Height of bvh
+     * @note The frame of a mesh cannot be modified after construction
      ******************************************/
     Mesh(const std::string &fname, mat_pointer material, Vec3 origin,
          Vec3 scale, Vec3 rotation, int bvh_height = 5);

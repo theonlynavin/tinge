@@ -10,7 +10,7 @@
 enum AbstractShapeType { GeneralFrameObject, MeshTriangle, MeshObject };
 
 /**************************************************************
- * Encapsulation class for output of intersection routine
+ * Encapsulation struct for output of intersection routine
  ***************************************************************/
 struct IntersectionOut {
     bool hit;                  /**< Check if the ray hit*/
