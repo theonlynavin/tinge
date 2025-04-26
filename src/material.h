@@ -53,7 +53,7 @@ class MaterialDiffuse : public AbstractMaterial {
      * @return Vec 3 Color object of the reflected light which decreases for rays farther from the normal
      ***********************************/
     Vec3 Fr(const Ray &wi, const Ray &wo, Vec3 n) const override {
-        Vec3 return_col = color * clamp(dot(wi.direction, n), 0, 1);
+        Vec3 return_col = color;
         return return_col; // light observed because of reflection
     }
     // as, most of the reflective surfaces do not emit light
@@ -74,7 +74,7 @@ class MaterialDiffuse : public AbstractMaterial {
      ***********************************/
 
     Ray sample_wi(const Ray &wo, const Vec3& at,const Vec3 &n, Random &random_gen) override {
-        return Ray(at + n * 1e-4f, random_gen.GenerateUniformPointHemisphere(n));
+        return Ray(at + n * 1e-4f, random_gen.GenerateCosinePointHemisphere(n));
     }
 };
 /***********************************
@@ -154,7 +154,7 @@ class MaterialMetallic : public AbstractMaterial {
     // Diffuse with probability p
     Ray sample_wi(const Ray &wo, const Vec3& at, const Vec3 &n, Random &random_gen) override {
         if (random_gen.GenerateUniformFloat() < p)
-            return Ray(at + n * 1e-4f, random_gen.GenerateUniformPointHemisphere(n));
+            return Ray(at + n * 1e-4f, random_gen.GenerateCosinePointHemisphere(n));
         else
             return reflect(wo, at, n);
     }
@@ -203,7 +203,6 @@ class MaterialTransmission : public AbstractMaterial {
             etai_over_etat = mu;
             outward_normal = -n;
         }
-
         
         float p = fresnel(dot(wo.direction, -outward_normal), mu);
         
@@ -277,7 +276,6 @@ class MaterialDielectric : public AbstractMaterial {
          * @return The combined reflected and transmitted color
          ***********************************/
         Vec3 Fr(const Ray &wi, const Ray &wo, Vec3 n) const override {
-            float cos_theta_out = clamp(dot(n, -wo.direction), 0.0f, 1.0f);
             float cos_theta_out = clamp(dot(n, -wo.direction), 0.0f, 1.0f);
             float cos_theta_in = clamp(dot(n, wi.direction), 0.0f, 1.0f);
 

@@ -7,14 +7,18 @@
 #include <iostream>
 #include <mutex>
 #include <ostream>
+#include <algorithm>
 #include <thread>
+
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#define SCENE_VIEW 0
 #include <stb_image/stb_image_write.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_STATIC
-#include "stb_image/stb_image.h"
+#include <stb_image/stb_image.h>
+
+Vec3 Renderer::sky_top_color = Vec3(0.1, 0.5, 0.9);
+Vec3 Renderer::sky_bottom_color = Vec3(1, 1, 1);
 
 /*********************************************************************************
  *  env_width : width of environment image
@@ -55,9 +59,6 @@ Vec3 sample_env_map(const Vec3 &dir) {
     return Vec3(env_data[index], env_data[index + 1], env_data[index + 2]);
 }
 
-Vec3 sky_white = Vec3(1, 1, 1);
-Vec3 sky_blue = Vec3(0.1f, 0.5f, 0.9f);
-
 /******************************************************************
  * @brief Uniform gradient from sky blue to sky white
  * @par Direction of ray
@@ -65,7 +66,7 @@ Vec3 sky_blue = Vec3(0.1f, 0.5f, 0.9f);
  ******************************************************************/
 Vec3 Renderer::env_light_gradient(const Vec3 &dir) {
     float t = 0.5f * (dir.y + 1.0f); // [-1, 1] → [0, 1]
-    return mix(sky_white, sky_blue, t);
+    return mix(sky_bottom_color, sky_top_color, t);
 }
 
 /****************************************************************************************
@@ -75,7 +76,7 @@ Vec3 Renderer::env_light_gradient(const Vec3 &dir) {
  * white and skyblue based on the height , but if HDR file is accessible then
  *maps to that
  *****************************************************************************************/
-void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
+void Renderer::render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
                    unsigned char *data, int w1, int w2, int out_width,
                    int out_height, int num_samples, int depth) {
     Random random_generator = Random(time(nullptr));
@@ -142,20 +143,117 @@ void render_thread(Camera camera, const std::vector<obj_pointer> &shapes,
     }
 }
 
+
+/***************************************************
+ * @brief Applies a simple 3x3 median filter to the image.
+ * Useful for removing salt-and-pepper noise while preserving edges.
+ *
+ * @param data Pointer to RGB image buffer
+ * @param width Image width
+ * @param height Image height
+ ***************************************************/
+void median_filter(unsigned char* data, int width, int height) {
+    unsigned char* temp = new unsigned char[width * height * 3];
+
+    for (int y = 1; y < height - 1; ++y) {
+        for (int x = 1; x < width - 1; ++x) {
+            unsigned char r_vals[9], g_vals[9], b_vals[9];
+            int idx = 0;
+
+            for (int ky = -1; ky <= 1; ++ky) {
+                for (int kx = -1; kx <= 1; ++kx) {
+                    int ix = x + kx;
+                    int iy = y + ky;
+                    int i = (iy * width + ix) * 3;
+                    r_vals[idx] = data[i + 0];
+                    g_vals[idx] = data[i + 1];
+                    b_vals[idx] = data[i + 2];
+                    ++idx;
+                }
+            }
+
+            std::sort(r_vals, r_vals + 9);
+            std::sort(g_vals, g_vals + 9);
+            std::sort(b_vals, b_vals + 9);
+
+            int id = (y * width + x) * 3;
+            temp[id + 0] = r_vals[4]; // median
+            temp[id + 1] = g_vals[4];
+            temp[id + 2] = b_vals[4];
+        }
+    }
+
+    // Copy filtered data back
+    for (int i = 0; i < width * height * 3; ++i)
+        data[i] = temp[i];
+
+    delete[] temp;
+}
+
+
+/***************************************************
+ * @brief Applies a simple 3x3 Median Filter to the image.
+ * Used for optional denoising of Monte Carlo noise.
+ * Using Gaussian blur because noise is uniform, it smooths out the noise without much blurring of the edges
+ *
+ * @param data Pointer to RGB image buffer
+ * @param width Image width
+ * @param height Image height
+ ***************************************************/
+void gaussian_blur(unsigned char* data, int width, int height) {
+    float kernel[3][3] = {
+        {1/16.f, 2/16.f, 1/16.f},
+        {2/16.f, 4/16.f, 2/16.f},
+        {1/16.f, 2/16.f, 1/16.f}
+    };
+
+    unsigned char* temp = new unsigned char[width * height * 3];
+
+    for (int y = 1; y < height - 1; ++y) {
+        for (int x = 1; x < width - 1; ++x) {
+            float r = 0, g = 0, b = 0;
+            for (int ky = -1; ky <= 1; ++ky) {
+                for (int kx = -1; kx <= 1; ++kx) {
+                    int ix = x + kx;
+                    int iy = y + ky;
+                    int idx = (iy * width + ix) * 3;
+                    float weight = kernel[ky + 1][kx + 1];
+                    r += data[idx + 0] * weight;
+                    g += data[idx + 1] * weight;
+                    b += data[idx + 2] * weight;
+                }
+            }
+            int id = (y * width + x) * 3;
+            temp[id + 0] = static_cast<unsigned char>(r);
+            temp[id + 1] = static_cast<unsigned char>(g);
+            temp[id + 2] = static_cast<unsigned char>(b);
+        }
+    }
+
+    // Copy blurred data back
+    for (int i = 0; i < width * height * 3; ++i)
+        data[i] = temp[i];
+
+    delete[] temp;
+}
+
+
 /************************************************************************************
  * @brief Takes values of pixels from all the chunks (here,10)
  * @return Joins all of them to give the pixel values of all the points of the
  *image.
  ***********************************************************************************/
 void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
-                      const std::string &outfile, int out_width, int out_height,
-                      bool env_light) {
+                      const std::string &outfile, int out_width, int out_height, int num_samples,
+                      bool env_light, bool denoise) {
 
     unsigned char *data = new unsigned char[out_width * out_height * 3];
     Random random_generator = Random(time(nullptr));
 
     // NDC coordinates
     float u, v;
+    std::cout << "[Renderer] Starting render!\n";
+    std::cout << "Thread status:\n";
     std::cout << " 0 1 2 3 4 5 6 7 8 9 \n[";
 
     // Create 10 threads to run concurrently
@@ -163,7 +261,7 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
     int N = 10;
     threads.reserve(N);
   
-    int num_samples = 300, depth = 4;
+    int depth = 8;
 
     // Each thread renders 1/10th width of scene
     for (int i = 0; i < N; i++) {
@@ -178,9 +276,23 @@ void Renderer::render(Camera camera, const std::vector<obj_pointer> &shapes,
 
     std::cout << "]\n";
 
+    if (denoise)
+        median_filter(data, out_width, out_height);
+
     // Write data
     stbi_write_png(outfile.data(), out_width, out_height, 3, data, 0);
     delete[] data;
+}
+
+/**********************************************************************************
+ * @brief Sets the sky color (if not using image based lighting)
+ * @par Azimuth color
+ * @par Horizon color
+**********************************************************************************/
+void Renderer::env_light(Vec3 sky_top_color, Vec3 sky_bottom_color) 
+{
+    Renderer::sky_top_color = sky_top_color;
+    Renderer::sky_bottom_color = sky_bottom_color;
 }
 
 /**********************************************************************************
@@ -231,8 +343,7 @@ Vec3 Renderer::illuminance(const IntersectionOut &surface, int max_depth,
     // TODO: Try using approximated variance to calculate
     //
     // Use larger number of samples to remove "sparkles"
-    float p = 1;
-    //clamp(std::max(Fr.x, std::max(Fr.y, Fr.z)), 0.01, 1);
+    float p = clamp(std::max(Fr.x, std::max(Fr.y, Fr.z)), 0.01, 1);
 
     if (random_generator.GenerateUniformFloat() > p)
         return Vec3(0,0,0);
